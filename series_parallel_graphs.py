@@ -1,6 +1,8 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Any
 
 import networkx as nx
+# from diamond_graphs import diamond_graph
+from metric_spaces import calculate_2tree_embedding_distortion
 
 
 def un(node: Union[tuple, int], i: int):
@@ -16,8 +18,8 @@ class SPGraph(nx.Graph):
         k2.add_edge(0, 1)
         return k2
 
-    def __init__(self, s=None, t=None, **attr):
-        super().__init__(**attr)
+    def __init__(self, s, t, incoming_graph_data: Any = None, **attr):
+        super().__init__(incoming_graph_data=incoming_graph_data, **attr)
         self.s = s if s is not None else 0
         self.t = t if t is not None else 1
         self.add_nodes_from([self.s, self.t])
@@ -49,18 +51,28 @@ class SPGraph(nx.Graph):
         return pc
 
 
-class DiamondGraph:
-    def __init__(self, k):
-        self.graph = SPGraph.K_2()
-        for i in range(k):
-            self.graph = self.next_diamond_graph()
+class DiamondGraph(SPGraph):
+    def __init__(self, k=None, sp_graph: SPGraph = None, **attr):
+        if sp_graph is None:
+            sp_graph = SPGraph(0, 2, nx.cycle_graph(4))
+            for i in range(1, k):
+                sp_graph = (sp_graph * sp_graph) + (sp_graph * sp_graph)
+        super().__init__(s=sp_graph.s, t=sp_graph.t, incoming_graph_data=sp_graph, **attr)
 
     def next_diamond_graph(self):
-        return (self.graph * self.graph) + (self.graph * self.graph)
+        return DiamondGraph(sp_graph=(self * self) + (self * self))
 
-
-
-
-d3 = DiamondGraph(3)
-nx.write_gexf(d3.graph, "D3.gexf")
-
+    @staticmethod
+    def two_trees(k: int):
+        g = DiamondGraph(1)
+        t1 = DiamondGraph(1)
+        t1.remove_edge(0, 1)
+        t2 = DiamondGraph(1)
+        t2.remove_edge(1, 2)
+        for i in range(1, k):
+            t1 = (t1 * t1) + (t1 * t1)
+            t1.remove_edge(t1.s, list(t1[t1.s].keys())[0])
+            t2 = (t2 * t2) + (t2 * t2)
+            t2.remove_edge(t2.t, list(t2[t2.t].keys())[0])
+            g = g.next_diamond_graph()
+        return t1, t2, g

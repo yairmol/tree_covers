@@ -2,7 +2,8 @@ import math
 import networkx as nx
 from itertools import combinations
 
-from diamond_graphs import diamond_graph, calculate_distortion, MetricSpace, calculate_2tree_embedding_distortion
+# from diamond_graphs import diamond_graph
+from metric_spaces import MetricSpace, calculate_distortion, calculate_2tree_embedding_distortion
 
 
 def all_different_spanning_trees(g: nx.Graph):
@@ -44,11 +45,12 @@ def find_min_embedding(g: nx.Graph):
 # nx.write_gexf(tree1, "tree1.gexf")
 # nx.write_gexf(tree2, "tree2.gexf")
 # print("minimum distortion", d)
-tree1 = nx.read_gexf("tree1.gexf")
+tree1 = nx.read_gexf("graphs/tree1.gexf")
 t_1 = nx.Graph()
 t_1.add_edges_from([(eval(e[0]), eval(e[1])) for e in tree1.edges])
-tree2 = nx.read_gexf("tree2.gexf")
+tree2 = nx.read_gexf("graphs/tree2.gexf")
 t_2 = nx.Graph()
 t_2.add_edges_from([(eval(e[0]), eval(e[1])) for e in tree2.edges])
+print(t_1.nodes)
 dist = calculate_2tree_embedding_distortion(diamond_graph(2), t_1, t_2)
 print(dist)
