@@ -1,3 +1,5 @@
 *.gexf
-graphs
+graph_files
 venv
+.idea
+__pycache__
