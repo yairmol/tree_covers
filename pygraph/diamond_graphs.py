@@ -232,7 +232,7 @@ def find_best_embedding(k: int, threshold: float):
 
 
 def dg_two_trees_cover(k: int, ext_existing_edge: Callable[[Edge, int], Set[Edge]],
-                       ext_ne_edge: Callable[[Edge, int], Set[Edge]]) -> (DiamondGraph, nx.Graph, nx.Graph):
+                       ext_ne_edge: Callable[[Edge, int], Set[Edge]]) -> Tuple[DiamondGraph, nx.Graph, nx.Graph]:
     def extend_tree(t: nx.Graph, d: DiamondGraph, t_num: int):
         edges = set(t.edges)
         for edge in edges:

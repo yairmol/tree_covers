@@ -1,5 +1,9 @@
 *.gexf
-graph_files
 venv
 .idea
 __pycache__
+.venv
+.vscode
+build
+cmake-build-debug
+.python-version
