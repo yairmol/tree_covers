@@ -17,6 +17,10 @@ add_executable(
         series_parallel.c embeddings.c
 )
 
+add_executable(
+        graph2 main2.c utils/vector.c utils/vector_queue.c graph_vec.c graph_algorithms2.c embeddings.c
+)
+
 # add_executable(gpugraph cuda/main.cu cgraph/linked_list.c cgraph/queue.c cgraph/graph.c cgraph/graph.c cuda/linked_list.cu cuda/queue.cu cuda/graph.cu)
 # add_executable(main cuda/main2.cu)
 #target_link_libraries(learncpp PUBLIC igraph::igraph)

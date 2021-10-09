@@ -1,10 +1,11 @@
-#include "utils/linked_list.h"
-// #include "graph.h"
-// #include "graph_algorithms.h"
+// #include "utils/linked_list.h"
+// #include "utils/vector.h"
+#include "graph.h"
+#include "graph_algorithms.h"
 #include <stdio.h>
 #include <stdlib.h>
 // #include "series_parallel.h"
-// #include "embeddings.h"
+#include "embeddings.h"
 
 
 // int main(int argc, char* argv[]){
@@ -27,17 +28,35 @@
 //   return 0;
 // }
 
+// int main(){
+//     struct LinkedList ll1, ll2, ll3;
+//     init_linked_list(&ll1); init_linked_list(&ll2);
+//     for (int i = 0; i < 10; i++){
+//         push_back(&ll1, i);
+//     }
+//     for (int i = 30; i < 40; i++){
+//         push_back(&ll2, i);
+//     }
+//     ll3 = caten_linked_list(&ll1, &ll2);
+//     print_linked_list(&ll1); printf("\n");
+//     print_linked_list(&ll2); printf("\n");
+//     print_linked_list(&ll3); printf("\n");
+// }
+
+// int main(){
+//     Vector* v = vector();
+//     for (int i = 0; i < 33; i++){
+//         vector_insert(v, i);
+//     }
+//     print_vector(v);
+//     printf("%d\n", vector_find(v, 3));
+//     vector_remove(v, 3);
+//     print_vector(v);
+// }
 int main(){
-    struct LinkedList ll1, ll2, ll3;
-    init_linked_list(&ll1); init_linked_list(&ll2);
-    for (int i = 0; i < 10; i++){
-        push_back(&ll1, i);
-    }
-    for (int i = 30; i < 40; i++){
-        push_back(&ll2, i);
-    }
-    ll3 = caten_linked_list(&ll1, &ll2);
-    print_linked_list(&ll1); printf("\n");
-    print_linked_list(&ll2); printf("\n");
-    print_linked_list(&ll3); printf("\n");
+    struct Graph** graphs = two_tree_embedding(9);
+    struct Graph* G = graphs[0];
+    struct Graph* T1 = graphs[1];
+    struct Graph* T2 = graphs[2];
+    printf("%f\n", parallel_tree_embedding_distortion(G, T1, T2, 0, G->num_vertices));
 }
