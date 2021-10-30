@@ -1,7 +1,7 @@
 #ifndef LEARNCPP_EMBEDDING_H
 #define LEARNCPP_EMBEDDING_H
 
-#include "graph.h"
+#include "graph_vec.h"
 
 /**
  * @param G a graph

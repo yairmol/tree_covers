@@ -2,7 +2,6 @@ from datetime import datetime
 from itertools import combinations
 from time import time
 from typing import TypeVar, Callable, Generic, Set, Dict, Any
-
 import networkx as nx
 
 T = TypeVar("T")
@@ -101,6 +100,19 @@ def _generate_dists(g_paths_gen, batch_size) -> Dict[Any, Dict[Any, int]]:
             break
         i += 1
     return dists_dict
+
+
+def two_trees_embedding_distortion(G, T1, T2):
+    G_gen = nx.all_pairs_shortest_path_length(G)
+    T1_gen = nx.all_pairs_shortest_path_length(T1)
+    T2_gen = nx.all_pairs_shortest_path_length(T2)
+    max_dist = 1
+    for (u, d_G), (_, d_T1), (_, d_T2) in zip(G_gen, T1_gen, T2_gen):
+        d_G.pop(u)
+        for v in d_G.keys():
+            dist = min(d_T1[v], d_T2[v]) / d_G[v]
+            max_dist = dist if dist > max_dist else max_dist
+    return max_dist
 
 
 def calc_2trees_embedding_distortion_medium_memory(

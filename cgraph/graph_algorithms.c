@@ -81,9 +81,7 @@ struct Graph** two_tree_embedding(int k){
   struct Graph** graphs = two_tree_embedding(k - 1);
   struct Graph* G_k_minus_1 = graphs[0], *T_k_minus_1_1 = graphs[1], *T_k_minus_1_2 = graphs[2];
   int k_num_vertices = G_k_minus_1->num_vertices + (G_k_minus_1->num_edges * 2);
-  printf("creating graphs with %d vertices\n", k_num_vertices);
   struct Graph* G_k = init_graph(k_num_vertices), *T_1 = init_graph(k_num_vertices), *T_2 = init_graph(k_num_vertices);
-  printf("created graphs with %d vertices\n", k_num_vertices);
   struct EdgeGenerator* EG = edges(G_k_minus_1);
   int u = G_k_minus_1->num_vertices;
   for (struct Edge e = next_edge(EG); e.u != 0 || e.v != 0; e = next_edge(EG)){
@@ -109,7 +107,6 @@ struct Graph** two_tree_embedding(int k){
     }
     u += 2;
   }
-  printf("finished creaing graph with %d vertices\n", k_num_vertices);
   free_graph(G_k_minus_1); free_graph(T_k_minus_1_1); free_graph(T_k_minus_1_2);
   free(graphs);
   struct Graph** ret = (struct Graph**)malloc(3 * sizeof(struct Graph*));
