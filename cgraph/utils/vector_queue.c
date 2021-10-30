@@ -15,6 +15,11 @@ void init_queue(Queue* Q){
     Q->tail = 0;
 }
 
+void clear(Queue* Q){
+    Q->head = 0;
+    Q->tail = 0;
+}
+
 void resize_queue(Queue* Q){
     int new_size = 2 * Q->size;
     int* new_arr = (int*)calloc(new_size, sizeof(int));
@@ -29,8 +34,9 @@ void resize_queue(Queue* Q){
  * @param e the element to be inserted
  */
 void enqueue(struct Queue* Q, int e){
+    int queue_size = Q->tail - Q->head;
     if (Q->head >= 1024){
-        memmove(Q->arr, &Q->arr[Q->head], (Q->tail - Q->head) * sizeof(int));
+        memmove(Q->arr, &Q->arr[Q->head], queue_size * sizeof(int));
         Q->head = 0;
         Q->tail -= 1024;
     }

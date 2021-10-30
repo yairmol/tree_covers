@@ -1,7 +1,8 @@
-import math
+from networkx.generators.small import diamond_graph
+import numpy as np
 import networkx as nx
 from itertools import combinations
-
+from diamond_graphs import DiamondGraph
 # from diamond_graphs import diamond_graph
 from metric_spaces import MetricSpace, calculate_distortion, calculate_2tree_embedding_distortion
 
@@ -45,12 +46,34 @@ def find_min_embedding(g: nx.Graph):
 # nx.write_gexf(tree1, "tree1.gexf")
 # nx.write_gexf(tree2, "tree2.gexf")
 # print("minimum distortion", d)
-tree1 = nx.read_gexf("graph_files/tree1.gexf")
-t_1 = nx.Graph()
-t_1.add_edges_from([(eval(e[0]), eval(e[1])) for e in tree1.edges])
-tree2 = nx.read_gexf("graph_files/tree2.gexf")
-t_2 = nx.Graph()
-t_2.add_edges_from([(eval(e[0]), eval(e[1])) for e in tree2.edges])
-print(t_1.nodes)
-dist = calculate_2tree_embedding_distortion(diamond_graph(2), t_1, t_2)
-print(dist)
+EPSILON = 1e-10
+
+
+def number_of_spanning_trees(G: nx.Graph):
+    evs = nx.linalg.laplacian_spectrum(G)
+    return np.prod([ev for ev in evs if abs(ev) > EPSILON])
+
+
+def number_of_diamond_graph_spanning_trees(k):
+    if k < 0:
+        raise ValueError()
+    if k == 0:
+        return 1
+    return ((2 * (4 ** k) + 4) // 3) * number_of_diamond_graph_spanning_trees(k - 1) ** 4
+
+
+def max_number_of_spanning_trees(n):
+    return n ** (n - 2)
+
+
+def diamond_graph_size(k):
+    return (2 * 4 ** k + 4) // 3
+
+
+def main():
+    print(number_of_diamond_graph_spanning_trees(3))
+    print(max_number_of_spanning_trees(diamond_graph_size(3)))
+
+
+if __name__ == "__main__":
+    main()

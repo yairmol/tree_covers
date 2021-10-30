@@ -1,6 +1,6 @@
 #include "embeddings.h"
-#include "graph.h"
-#include "graph_algorithms.h"
+#include "graph_vec.h"
+#include "graph_algorithms2.h"
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -51,7 +51,9 @@ void * embedding_distortion_thread(void* arg){
       distortion = ((float)(min_dist)) / ((float)d_G[j]);
       if (distortion > max_distortion){
         max_distortion = distortion;
-        printf("changed max distortion to %f\n", max_distortion);
+        if (distortion > 6.5){
+          printf("changed max distortion to %f\n", max_distortion);
+        }
       }
     }
     free(d_G); free(d_T1); free(d_T2);
