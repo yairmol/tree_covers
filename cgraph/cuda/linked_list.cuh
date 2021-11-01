@@ -4,7 +4,7 @@
 
 #ifndef LEARNCPP_LINKED_LIST_CUH
 #define LEARNCPP_LINKED_LIST_CUH
-#include "../cgraph/linked_list.h"
+#include "../utils/linked_list.h"
 
 __device__ void dev_free_link(struct Link* l);
 

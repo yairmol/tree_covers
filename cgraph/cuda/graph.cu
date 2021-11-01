@@ -1,108 +1,132 @@
-#include <iostream>
-#include "../cgraph/graph.h"
 #include "graph.cuh"
-#include "../cgraph/queue.h"
-#include "queue.cuh"
+#include "vector.cuh"
+#include <stdlib.h>
+#include <stdio.h>
 
-struct Graph* dev_init_graph(int num_vertices){
-  struct Graph* G;
-  cudaMalloc(&G, sizeof(struct Graph));
-  cudaMemcpy(&G->num_vertices, &num_vertices, sizeof(int), cudaMemcpyHostToDevice);
-  struct LinkedList* ll;
-  cudaMalloc(&ll, sizeof(struct LinkedList) * num_vertices);
-  cudaMemcpy(&G->adj_list, &ll, sizeof(struct LinkedList*), cudaMemcpyHostToDevice);
-  cudaMemset(ll, 0, sizeof(struct LinkedList) * num_vertices);
+
+__device__ __host__
+void mmalloc(void** p, size_t size){
+  #ifdef __CUDA_ARCH__
+  *p = malloc(size);
+  #else
+  cudaMallocManaged(p, size);
+  #endif
+
+}
+
+__device__ __host__
+void mfree(void* p){
+  #ifdef __CUDA_ARCH__
+  free(p);
+  #else
+  cudaFree(p);
+  #endif
+}
+
+__host__ __device__
+struct Graph* init_graph(struct Graph* G, int num_vertices){
+  G->num_vertices = num_vertices;
+  mmalloc((void**)&G->adj_list, num_vertices * sizeof(Vector));
+  for (int i = 0; i < num_vertices; i++){
+    vector_init(&G->adj_list[i]);
+  }
+  G->num_edges = 0;
   return G;
 }
 
-__global__ void single_source_shortest_path(struct Graph* G, int* D){
-  int s = threadIdx.x;
-  int* distances = D + (s * G->num_vertices);
-  char* visited = (char*)malloc(G->num_vertices * sizeof(char));
-  memset(visited, 0, G->num_vertices * sizeof(char));
-  distances[s] = 0;
-  visited[s] = 1;
-  struct Queue* Q = (struct Queue*)malloc(sizeof(struct Queue));
-  Q->head = NULL;
-  Q->tail = NULL;
-  dev_enqueue(Q, s);
-  while (!dev_is_empty(Q)){
-    int u = dev_dequeue(Q);
-    struct Link* ptr = G->adj_list[u].head;
-    while (ptr != NULL){
-      if (!visited[ptr->value]){
-        visited[ptr->value] = 1;
-        distances[ptr->value] = distances[u] + 1;
-        dev_enqueue(Q, ptr->value);
-      }
-      ptr = ptr->next;
-    }
+__host__ __device__
+void free_graph(struct Graph* G){
+  for (int i = 0; i < G->num_vertices; i++){
+    vector_free(&G->adj_list[i]);
   }
-  free(visited);
-  dev_free_queue(Q);
+  mfree(G->adj_list);
 }
 
-struct Graph* copy_graph_to_device(struct Graph* G){
-  struct Graph* devG;
-  cudaMalloc(&devG, sizeof(struct Graph));
-  cudaMemcpy(&devG->num_vertices, &G->num_vertices, sizeof(int), cudaMemcpyHostToDevice);
-
-  struct LinkedList* adj_list;
-  cudaMalloc(&adj_list, sizeof(struct LinkedList) * G->num_vertices);
-  cudaMemset(adj_list, 0, sizeof(struct LinkedList) * G->num_vertices);
-  cudaMemcpy(&devG->adj_list, &adj_list, sizeof(struct LinkedList*), cudaMemcpyHostToDevice);
-
-  struct LinkedList* host_adj_list = (struct LinkedList*)calloc(G->num_vertices, sizeof(struct LinkedList));
-
-  for (int i = 0; i < G->num_vertices; i++) {
-    struct Link* ptr = G->adj_list[i].head;
-    struct Link* prev = NULL;
-    while (ptr != NULL){
-      struct Link* x;
-      cudaMalloc(&x, sizeof(struct Link));
-      // printf("p1: %p\t", x);
-      cudaMemcpy(&x->value, &ptr->value, sizeof(int), cudaMemcpyHostToDevice);
-      cudaMemcpy(&x->next, &prev, sizeof(struct Link*), cudaMemcpyHostToDevice);
-      prev = x;
-      // cudaMemcpy(&x->next, devG->adj_list + i, sizeof(struct Link*), cudaMemcpyDeviceToDevice);
-      // cudaMemcpy(&devG->adj_list[i].head, &x, sizeof(struct Link*), cudaMemcpyDeviceToDevice);
-      ptr = ptr->next;
-    }
-    // printf("\n");
-    host_adj_list[i].head = prev;
-  }
-  cudaMemcpy(adj_list, host_adj_list, sizeof(struct LinkedList) * G->num_vertices, cudaMemcpyHostToDevice);
-  return devG;
+__host__ __device__
+void add_edge(struct Graph* G, int u, int v){
+  vector_insert(&G->adj_list[u], v);
+  vector_insert(&G->adj_list[v], u);
+  G->num_edges++;
 }
 
-void print_device_graph(struct Graph* devG){
-
-  int n;
-  cudaMemcpy(&n, &devG->num_vertices, sizeof(int), cudaMemcpyDeviceToHost);
-  printf("n: %d\n", n);
-
-  struct LinkedList* dev_adj_list;
-  cudaMemcpy(&dev_adj_list, &devG->adj_list, sizeof(struct LinkedList*), cudaMemcpyDeviceToHost);
-
-  struct LinkedList* adj_list = (struct LinkedList*)calloc(n, sizeof(struct LinkedList));
-  cudaMemcpy(adj_list, dev_adj_list, sizeof(struct LinkedList) * n, cudaMemcpyDeviceToHost);
-
-  for (int i = 0; i < n; i++){
-    struct Link* ptr = adj_list[i].head;
-    while (ptr != NULL){
-      // printf("p2: %p ", ptr);
-      struct Link x;
-      cudaMemcpy(&x, ptr, sizeof(struct Link), cudaMemcpyDeviceToHost);
-      if (i < x.value) {
-        printf("{%d, %d}", i, x.value);
-      }
-      ptr = x.next;
-    }
-    printf("\n");
-  }
+__host__ __device__
+int remove_edge(struct Graph* G, int u, int v){
+  return vector_remove(&G->adj_list[u], v) 
+         && vector_remove(&G->adj_list[v], u);
 }
 
-__global__ void get_first_neighbor(struct Graph* G, int* neighbors){
-  int u = threadIdx.x * blockDim.x + threadIdx.y;
-  neighbors[u] = G->adj_list[u].head->value;
+__host__ __device__
+int has_edge(struct Graph* G, int u, int v){
+  return vector_find(&G->adj_list[u], v) != -1;
+}
+
+__host__ __device__
+struct EdgeGenerator* edges(struct EdgeGenerator* EG, struct Graph* G){
+  EG->G = G;
+  EG->current_u = 0;
+  EG->next_v = 0;
+  return EG;
+}
+
+__host__ __device__
+struct Edge next_edge(struct EdgeGenerator* EG){
+start:
+  if (EG->current_u >= EG->G->num_vertices){
+    return (struct Edge){0, 0};
+  }
+  if(EG->next_v >= EG->G->adj_list[EG->current_u].cur){
+    EG->current_u++;
+    EG->next_v = 0;
+    goto start;
+  }
+  if(EG->G->adj_list[EG->current_u].arr[EG->next_v] < EG->current_u){
+    EG->next_v++;
+    goto start;
+  }
+  struct Edge e = {EG->current_u, EG->G->adj_list[EG->current_u].arr[EG->next_v]};
+  EG->next_v++;
+  return e;
+}
+
+__host__ __device__
+struct Graph* path_graph(struct Graph* G, int n){
+  init_graph(G, n);
+  for (int u = 1; u < n; u++) {
+    add_edge(G, u - 1, u);
+  }
+  return G;
+}
+
+__host__ __device__
+struct Graph* DiamondGraph(struct Graph* Gk, int k){
+  if (k < 1){
+    return NULL;
+  }
+  if (k == 1) {
+    init_graph(Gk, 4);
+    add_edge(Gk, 0, 1); add_edge(Gk, 1, 2);
+    add_edge(Gk, 2, 3); add_edge(Gk, 3, 0);
+    return Gk;
+  }
+  struct Graph G_k_minus_1;
+  DiamondGraph(&G_k_minus_1, k - 1);
+  init_graph(Gk, G_k_minus_1.num_vertices + (G_k_minus_1.num_edges * 2));
+  struct EdgeGenerator EG;
+  edges(&EG, &G_k_minus_1);
+  int u = G_k_minus_1.num_vertices;
+  for (struct Edge e = next_edge(&EG); e.u != 0 || e.v != 0; e = next_edge(&EG)){
+    add_edge(Gk, e.u, u); add_edge(Gk, e.u, u + 1);
+    add_edge(Gk, e.v, u); add_edge(Gk, e.v, u + 1);
+    u += 2;
+  }
+  free_graph(&G_k_minus_1);
+  return Gk;
+}
+
+__host__
+void print_graph(struct Graph* G) {
+  for (int u = 0; u < G->num_vertices; u++){
+    printf("%d: ", u);
+    print_vector(&G->adj_list[u]);
+  }
 }

@@ -1,4 +1,3 @@
-#include <cuda.h>
 #include <iostream>
 
 #define N (1 << 12)
@@ -11,17 +10,20 @@ static void HandleError(cudaError_t err, const char* file, int line){
     }
 }
 
-__device__ int get_value(){
+__device__
+int get_value(){
     uint u = threadIdx.x;
     return u * 2;
 }
 
-__global__ void set_value(int *a){
+__global__
+void set_value(int *a){
     uint u = threadIdx.x;
     a[u] = get_value();
 }
 
-__global__ void matmul(const int *a, const int *b, int *c){
+__global__
+void matmul(const int *a, const int *b, int *c){
     uint row = blockIdx.y * blockDim.y + threadIdx.y;
     uint col = blockIdx.x * blockDim.x + threadIdx.x;
     for (int k = 0; k < N; k++) {

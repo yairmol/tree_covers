@@ -6,7 +6,7 @@
 #define LEARNCPP_QUEUE_CUH
 
 #include "linked_list.cuh"
-#include "../cgraph/queue.h"
+#include "../utils/queue.h"
 
 __device__ void dev_enqueue(struct Queue* Q, int e);
 
