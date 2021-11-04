@@ -1,6 +1,7 @@
-#include "graph_algorithms2.h"
-#include "utils/vector_queue.h"
-#include "graph_vec.h"
+#include "graph_algorithms.h"
+#include "../utils/linked_list.h"
+#include "../utils/queue.h"
+#include "graph.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -9,23 +10,22 @@ int* single_source_shortest_path(struct Graph* G, int s){
   char* visited = (char*)calloc(G->num_vertices, sizeof(char));
   distances[s] = 0;
   visited[s] = 1;
-  Queue* Q = queue();
+  struct Queue* Q = (Queue*)calloc(1, sizeof(struct Queue));
   enqueue(Q, s);
   while (!is_empty(Q)){
     int u = dequeue(Q);
-    int* neighbors = G->adj_list[u].arr;
-    for (int i = 0; i < G->adj_list[u].cur; i++){
-      int v = neighbors[i];
-      if (!visited[v]){
-        visited[v] = 1;
-        distances[v] = distances[u] + 1;
-        enqueue(Q, v);
+    struct Link* ptr = G->adj_list[u].head;
+    while (ptr != NULL){
+      if (!visited[ptr->value]){
+        visited[ptr->value] = 1;
+        distances[ptr->value] = distances[u] + 1;
+        enqueue(Q, ptr->value);
       }
+      ptr = ptr->next;
     }
   }
   free(visited);
   free_queue(Q);
-  free(Q);
   return distances;
 }
 
@@ -93,20 +93,17 @@ struct Graph** two_tree_embedding(int k){
     add_edge(G_k, e.u, u); add_edge(G_k, e.u, u + 1);
     add_edge(G_k, e.v, u); add_edge(G_k, e.v, u + 1);
     int t_1_has_edge = has_edge(T_k_minus_1_1, e.u, e.v), t_2_has_edge = has_edge(T_k_minus_1_2, e.u, e.v);
-    if (!t_1_has_edge && !t_2_has_edge){
-      printf("----- %d: both t1 and t2 doesn't have an edge {%d, %d}\n", k, e.u, e.v);
-    }
     if (t_1_has_edge && t_2_has_edge){
-      add_edge(T_1, e.u, u + 1); add_edge(T_1, e.v, u); add_edge(T_1, e.v, u + 1);
-      add_edge(T_2, e.u, u); add_edge(T_2, e.u, u + 1); add_edge(T_2, e.v, u);
+      add_edge(T_1, e.u, u); add_edge(T_1, e.u, u + 1); add_edge(T_1, e.v, u);
+      add_edge(T_2, e.v, u); add_edge(T_2, e.v, u + 1); add_edge(T_2, e.u, u);
     }
     else if (t_1_has_edge){
-      add_edge(T_1, e.u, u + 1); add_edge(T_1, e.v, u); add_edge(T_1, e.v, u + 1);
+      add_edge(T_1, e.u, u); add_edge(T_1, e.u, u + 1); add_edge(T_1, e.v, u);
       add_edge(T_2, e.u, u); add_edge(T_2, e.u, u + 1);
     }
     else if (t_2_has_edge){
       add_edge(T_1, e.u, u); add_edge(T_1, e.u, u + 1);
-      add_edge(T_2, e.u, u); add_edge(T_2, e.v, u); add_edge(T_2, e.v, u + 1);
+      add_edge(T_2, e.u, u); add_edge(T_2, e.u, u + 1); add_edge(T_2, e.v, u);
     }
     u += 2;
   }

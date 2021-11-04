@@ -1,36 +1,36 @@
-#include "graph_algorithms.h"
-#include "utils/linked_list.h"
-#include "utils/queue.h"
-#include "graph.h"
+#include "graph_algorithms2.h"
+#include "../utils/vector_queue.h"
+#include "graph_vec.h"
 #include <stdlib.h>
 #include <stdio.h>
 
 int* single_source_shortest_path(struct Graph* G, int s){
-  int* distances = calloc(G->num_vertices, sizeof(int));
-  char* visited = calloc(G->num_vertices, sizeof(char));
+  int* distances = (int*)calloc(G->num_vertices, sizeof(int));
+  char* visited = (char*)calloc(G->num_vertices, sizeof(char));
   distances[s] = 0;
   visited[s] = 1;
-  struct Queue* Q = calloc(1, sizeof(struct Queue));
+  Queue* Q = queue();
   enqueue(Q, s);
   while (!is_empty(Q)){
     int u = dequeue(Q);
-    struct Link* ptr = G->adj_list[u].head;
-    while (ptr != NULL){
-      if (!visited[ptr->value]){
-        visited[ptr->value] = 1;
-        distances[ptr->value] = distances[u] + 1;
-        enqueue(Q, ptr->value);
+    int* neighbors = G->adj_list[u].arr;
+    for (int i = 0; i < G->adj_list[u].cur; i++){
+      int v = neighbors[i];
+      if (!visited[v]){
+        visited[v] = 1;
+        distances[v] = distances[u] + 1;
+        enqueue(Q, v);
       }
-      ptr = ptr->next;
     }
   }
   free(visited);
   free_queue(Q);
+  free(Q);
   return distances;
 }
 
 int** all_pairs_shortest_path(struct Graph* G) {
-  int **D = calloc(G->num_vertices, sizeof(int *));
+  int **D = (int**)calloc(G->num_vertices, sizeof(int *));
   for (int i = 0; i < G->num_vertices; i++) {
     D[i] = single_source_shortest_path(G, i);
   }
@@ -47,7 +47,7 @@ int* next(struct DistanceGenerator* DG){
 }
 
 struct DistanceGenerator* init_distance_generator(struct Graph* G, int start, int stop){
-  struct DistanceGenerator* DG = malloc(sizeof(struct DistanceGenerator));
+  struct DistanceGenerator* DG = (struct DistanceGenerator*)malloc(sizeof(struct DistanceGenerator));
   DG->G = G;
   DG->current = start;
   DG->max_node = stop;
@@ -55,7 +55,7 @@ struct DistanceGenerator* init_distance_generator(struct Graph* G, int start, in
 }
 
 struct DistanceGenerator* all_pairs_shortest_paths_length_generator(struct Graph* G){
-  struct DistanceGenerator* DG = malloc(sizeof(struct DistanceGenerator));
+  struct DistanceGenerator* DG = (struct DistanceGenerator*)malloc(sizeof(struct DistanceGenerator));
   DG->G = G;
   DG->current = 0;
   DG->max_node = G->num_vertices;
@@ -93,17 +93,20 @@ struct Graph** two_tree_embedding(int k){
     add_edge(G_k, e.u, u); add_edge(G_k, e.u, u + 1);
     add_edge(G_k, e.v, u); add_edge(G_k, e.v, u + 1);
     int t_1_has_edge = has_edge(T_k_minus_1_1, e.u, e.v), t_2_has_edge = has_edge(T_k_minus_1_2, e.u, e.v);
+    if (!t_1_has_edge && !t_2_has_edge){
+      printf("----- %d: both t1 and t2 doesn't have an edge {%d, %d}\n", k, e.u, e.v);
+    }
     if (t_1_has_edge && t_2_has_edge){
-      add_edge(T_1, e.u, u); add_edge(T_1, e.u, u + 1); add_edge(T_1, e.v, u);
-      add_edge(T_2, e.v, u); add_edge(T_2, e.v, u + 1); add_edge(T_2, e.u, u);
+      add_edge(T_1, e.u, u + 1); add_edge(T_1, e.v, u); add_edge(T_1, e.v, u + 1);
+      add_edge(T_2, e.u, u); add_edge(T_2, e.u, u + 1); add_edge(T_2, e.v, u);
     }
     else if (t_1_has_edge){
-      add_edge(T_1, e.u, u); add_edge(T_1, e.u, u + 1); add_edge(T_1, e.v, u);
+      add_edge(T_1, e.u, u + 1); add_edge(T_1, e.v, u); add_edge(T_1, e.v, u + 1);
       add_edge(T_2, e.u, u); add_edge(T_2, e.u, u + 1);
     }
     else if (t_2_has_edge){
       add_edge(T_1, e.u, u); add_edge(T_1, e.u, u + 1);
-      add_edge(T_2, e.u, u); add_edge(T_2, e.u, u + 1); add_edge(T_2, e.v, u);
+      add_edge(T_2, e.u, u); add_edge(T_2, e.v, u); add_edge(T_2, e.v, u + 1);
     }
     u += 2;
   }
