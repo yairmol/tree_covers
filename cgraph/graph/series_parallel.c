@@ -1,11 +1,11 @@
 #include "graph.h"
-#include "utils/queue.h"
-#include "utils/linked_list.h"
+#include "../utils/queue.h"
+#include "../utils/linked_list.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "series_parallel.h"
-#include "embeddings.h"
-#include "utils/utils.h"
+#include "../embeddings.h"
+#include "../utils/utils.h"
 
 
 typedef int (*shift_t)(int, SPGraph*, SPGraph*);

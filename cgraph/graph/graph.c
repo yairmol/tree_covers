@@ -1,12 +1,12 @@
 #include "graph.h"
-#include "utils/linked_list.h"
+#include "../utils/linked_list.h"
 #include <stdlib.h>
 #include <stdio.h>
 
 struct Graph* init_graph(int num_vertices){
-  struct Graph* G = malloc(sizeof(struct Graph));
+  struct Graph* G = (struct Graph*)malloc(sizeof(struct Graph));
   G->num_vertices = num_vertices;
-  G->adj_list = calloc(num_vertices, sizeof(struct LinkedList));
+  G->adj_list = (struct LinkedList*)calloc(num_vertices, sizeof(struct LinkedList));
   G->num_edges = 0;
   return G;
 }

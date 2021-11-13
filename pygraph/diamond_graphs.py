@@ -4,15 +4,17 @@ from typing import Tuple, Any, Callable, Set, Union, Dict
 
 import networkx as nx
 
-from metric_spaces import calculate_2tree_embedding_distortion, calc_2tree_embedding_distortion_with_known_distances, \
-    _graph_distances, calc_2trees_embedding_distortion_low_memory, calc_2trees_embedding_distortion_medium_memory
+from metric_spaces import (
+    calculate_2tree_embedding_distortion,
+    calc_2tree_embedding_distortion_with_known_distances,
+    two_trees_embedding_distortion
+)
 
 Vertex = Any
 Edge = Tuple[Vertex, Vertex]
 
 
 class DiamondGraph:
-
     nodes_mapping: Dict[Any, int] = {1: 1, 2: 2, 3: 3, 4: 4}
     last_node = 4
 
@@ -106,14 +108,15 @@ class DiamondGraph:
             middle_nodes = list(middle_nodes)
             one = getattr(self, main_vertices[i]) if i % 2 == 0 else getattr(self, main_vertices[(i + 1) % 4])
             three = getattr(self, main_vertices[(i + 1) % 4]) if i % 2 == 0 else getattr(self, main_vertices[i])
-            d_k_i = DiamondGraph(self.k - 1,
-                                 {
-                                     "graph": d_k_i,
-                                     "one": one,
-                                     "two": middle_nodes[0],
-                                     "three": three,
-                                     "four": middle_nodes[1]
-                                 })
+            d_k_i = DiamondGraph(
+                self.k - 1, {
+                    "graph": d_k_i,
+                    "one": one,
+                    "two": middle_nodes[0],
+                    "three": three,
+                    "four": middle_nodes[1]
+                }
+            )
             d_k_is.append(d_k_i)
         return d_k_is
 
@@ -286,15 +289,11 @@ def two_spanning_trees_by_construction(k: int, to_enumerate=True):
     according to the edges that are in the previous spanning tree.
     assumption: for every edge e=(u,v) we assume u < v where < means
     that u was generated before v (or that u and v are both in V1 and then they are both integers)"""
-    start, d1 = 2, DiamondGraph(1)
+    d1 = DiamondGraph(1)
     t1, t2 = nx.Graph(d1.graph), nx.Graph(d1.graph)
     t1.remove_edge(1, 2)
     t2.remove_edge(3, 4)
     d_i_minus_1, d_i = d1, d1
-    # if k > 2:
-    #     d_i_minus_1, d_i = d1, d1.next_diamond_graph(to_enumerate=to_enumerate)
-    #     # TODO: start from a better trees pair3
-    #     t1, t2, start = get_initial_trees(), start + 1
     for i in range(2, k + 1):
         d_i = d_i_minus_1.next_diamond_graph(to_enumerate=to_enumerate)
         t1.add_nodes_from(d_i.graph.nodes)
@@ -343,9 +342,9 @@ def main(size, write_graphs=False):
     # print("missing edges in t2:", set(d.edges).difference(t2.edges))
     print("checking correctness:", nx.is_tree(t1), nx.is_tree(t2))
     print(datetime.now(), "calculating distortion")
-    print(calc_2trees_embedding_distortion_medium_memory(d, t1, t2, 1))
+    print(two_trees_embedding_distortion(d, t1, t2))
     print(datetime.now(), "finished")
 
 
 if __name__ == "__main__":
-    main(2, True)
+    main(5)

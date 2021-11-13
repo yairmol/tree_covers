@@ -1,16 +1,16 @@
 #include "graph_algorithms.h"
-#include "utils/linked_list.h"
-#include "utils/queue.h"
+#include "../utils/linked_list.h"
+#include "../utils/queue.h"
 #include "graph.h"
 #include <stdlib.h>
 #include <stdio.h>
 
 int* single_source_shortest_path(struct Graph* G, int s){
-  int* distances = calloc(G->num_vertices, sizeof(int));
-  char* visited = calloc(G->num_vertices, sizeof(char));
+  int* distances = (int*)calloc(G->num_vertices, sizeof(int));
+  char* visited = (char*)calloc(G->num_vertices, sizeof(char));
   distances[s] = 0;
   visited[s] = 1;
-  struct Queue* Q = calloc(1, sizeof(struct Queue));
+  struct Queue* Q = (Queue*)calloc(1, sizeof(struct Queue));
   enqueue(Q, s);
   while (!is_empty(Q)){
     int u = dequeue(Q);
@@ -30,7 +30,7 @@ int* single_source_shortest_path(struct Graph* G, int s){
 }
 
 int** all_pairs_shortest_path(struct Graph* G) {
-  int **D = calloc(G->num_vertices, sizeof(int *));
+  int **D = (int**)calloc(G->num_vertices, sizeof(int *));
   for (int i = 0; i < G->num_vertices; i++) {
     D[i] = single_source_shortest_path(G, i);
   }
@@ -47,7 +47,7 @@ int* next(struct DistanceGenerator* DG){
 }
 
 struct DistanceGenerator* init_distance_generator(struct Graph* G, int start, int stop){
-  struct DistanceGenerator* DG = malloc(sizeof(struct DistanceGenerator));
+  struct DistanceGenerator* DG = (struct DistanceGenerator*)malloc(sizeof(struct DistanceGenerator));
   DG->G = G;
   DG->current = start;
   DG->max_node = stop;
@@ -55,7 +55,7 @@ struct DistanceGenerator* init_distance_generator(struct Graph* G, int start, in
 }
 
 struct DistanceGenerator* all_pairs_shortest_paths_length_generator(struct Graph* G){
-  struct DistanceGenerator* DG = malloc(sizeof(struct DistanceGenerator));
+  struct DistanceGenerator* DG = (struct DistanceGenerator*)malloc(sizeof(struct DistanceGenerator));
   DG->G = G;
   DG->current = 0;
   DG->max_node = G->num_vertices;
@@ -81,9 +81,7 @@ struct Graph** two_tree_embedding(int k){
   struct Graph** graphs = two_tree_embedding(k - 1);
   struct Graph* G_k_minus_1 = graphs[0], *T_k_minus_1_1 = graphs[1], *T_k_minus_1_2 = graphs[2];
   int k_num_vertices = G_k_minus_1->num_vertices + (G_k_minus_1->num_edges * 2);
-  printf("creating graphs with %d vertices\n", k_num_vertices);
   struct Graph* G_k = init_graph(k_num_vertices), *T_1 = init_graph(k_num_vertices), *T_2 = init_graph(k_num_vertices);
-  printf("created graphs with %d vertices\n", k_num_vertices);
   struct EdgeGenerator* EG = edges(G_k_minus_1);
   int u = G_k_minus_1->num_vertices;
   for (struct Edge e = next_edge(EG); e.u != 0 || e.v != 0; e = next_edge(EG)){
@@ -109,7 +107,6 @@ struct Graph** two_tree_embedding(int k){
     }
     u += 2;
   }
-  printf("finished creaing graph with %d vertices\n", k_num_vertices);
   free_graph(G_k_minus_1); free_graph(T_k_minus_1_1); free_graph(T_k_minus_1_2);
   free(graphs);
   struct Graph** ret = (struct Graph**)malloc(3 * sizeof(struct Graph*));

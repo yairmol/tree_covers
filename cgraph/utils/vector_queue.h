@@ -16,6 +16,8 @@ Queue* queue();
 
 void init_queue(Queue* Q);
 
+void clear(Queue* Q);
+
 /**
  * insert the element e to the end of the queue
  * @param e the element to be inserted
