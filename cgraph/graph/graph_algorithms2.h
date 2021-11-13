@@ -34,6 +34,38 @@ struct DistanceGenerator* init_distance_generator(struct Graph* G, int start, in
  */
 struct DistanceGenerator* all_pairs_shortest_paths_length_generator(struct Graph* G);
 
-struct Graph** two_tree_embedding(int k);
+/**
+ * @brief returns a graph which is the bfs tree of G rooted at source
+ * 
+ * @param G a graph
+ * @param source the source from which we run bfs
+ * @return a tree
+ */
+struct Graph* bfs_tree(struct Graph* G, int source);
+
+/**
+ * @brief returns a graph which is a dfs tree (or forest) of G
+ * 
+ * @param G a graph
+ * @return a Tree (or forest) 
+ */
+struct Graph* dfs_tree(struct Graph* G);
+
+/**
+ * @brief find the connected componenets of G
+ * 
+ * @param G a graph
+ * @return an array of vectors where each vector is a connected component
+ */
+Vector* connected_components(struct Graph* G);
+
+/**
+ * @brief returns a graph which is the induced subgraph of G on U 
+ * 
+ * @param G a graph
+ * @param U a set of vertices of G (U ⊆ V) 
+ * @return an induced subgraph
+ */
+struct Graph* induced_subgraph(struct Graph* G, int* U);
 
 #endif //LEARNCPP_GRAPH_ALGORITHMS_H

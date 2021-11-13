@@ -13,12 +13,12 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 #add_executable(learncpp main.cpp Graph.h GraphAlgorithms.h Timer.h graph.c)
 add_executable(
         graph main.c utils/linked_list.c utils/queue.c 
-        graph.c graph_algorithms.c utils/utils.c
-        series_parallel.c embeddings.c
+        graph/graph.c graph/graph_algorithms.c utils/utils.c
+        graph/series_parallel.c embeddings.c
 )
 
 add_executable(
-        graph2 main2.c utils/vector.c utils/vector_queue.c graph_vec.c graph_algorithms2.c embeddings.c
+        graph2 main2.c utils/vector.c utils/vector_queue.c graph/graph_vec.c graph/graph_algorithms2.c embeddings.c
 )
 
 # add_executable(gpugraph cuda/main.cu cgraph/linked_list.c cgraph/queue.c cgraph/graph.c cgraph/graph.c cuda/linked_list.cu cuda/queue.cu cuda/graph.cu)

@@ -70,9 +70,5 @@ struct Edge{
  */
 struct Edge next_edge(struct EdgeGenerator* EG);
 
-struct Graph* path_graph(int n);
-
-struct Graph* DiamondGraph(int k);
-
 void print_graph(struct Graph* G);
 #endif //LEARNCPP_GRAPH_H

@@ -2,6 +2,7 @@
 #define LEARNCPP_EMBEDDING_H
 
 #include "graph/graph_vec.h"
+#include "utils/vector.h"
 
 /**
  * @param G a graph
@@ -19,5 +20,15 @@ void * embedding_distortion_thread(void* arg);
  * @see tree_embedding_distortion() for more info
  */
 float parallel_tree_embedding_distortion(struct Graph* G, struct Graph* T_1, struct Graph* T_2, int all_start, int all_stop);
+
+
+/**
+ * @param G a graph
+ * @param F a collection of spanning trees for G
+ * @param k F size
+ * @return the embedding distortion which is defined as 
+ * max{min{d_T(u, v) | T ∈ F} / d_G(u, v) | u, v ∈ V(G)}
+ */
+float tree_cover_embedding_distorion(struct Graph* G, struct Graph F[], int k);
 
 #endif // LEARNCPP_EMBEDDING_H
