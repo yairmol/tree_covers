@@ -25,11 +25,11 @@ def calculate_distortion(x_metric_space: MetricSpace[T1], y_metric_space: Metric
         f_p2 = f(p2)
         d_x_p1_p2 = x_metric_space.d(p1, p2)
         d_y_p1_p2 = y_metric_space.d(f_p1, f_p2)
-        curr_dist = d_y_p1_p2 / d_x_p1_p2
-        if debug and curr_dist > threshold:
+        cur_dist = d_y_p1_p2 / d_x_p1_p2
+        if debug and cur_dist > threshold:
             print(f"points ({p1}, {p2}) original distance is {d_x_p1_p2} but ({f_p1}, {f_p2}) distance is {d_y_p1_p2}")
-            print(f"({p1}, {p2}) distortion: {curr_dist}")
-        distortion = max(distortion, curr_dist)
+            print(f"({p1}, {p2}) distortion: {cur_dist}")
+        distortion = max(distortion, cur_dist)
     return distortion
 
 
@@ -140,22 +140,19 @@ def calc_2trees_embedding_distortion_medium_memory(
     return max_distortion
 
 
-# def calculate_distortion_to_ancestor(g: nx.Graph, t1: nx.Graph, t2: nx.Graph, e_ancestor, successors=None):
-#     u, v = e_ancestor
-#     dists_g = {
-#         u: nx.single_source_shortest_path_length(g, u),
-#         v: nx.single_source_shortest_path_length(g, v)
-#     }
-#     dists_t1 = {
-#         u: nx.single_source_shortest_path_length(t1, u),
-#         v: nx.single_source_shortest_path_length(t1, v)
-#     }
-#     dists_t2 = {
-#         u: nx.single_source_shortest_path_length(t2, u),
-#         v: nx.single_source_shortest_path_length(t2, v)
-#     }
-#     if not successors:
-#         successors = g.nodes
-#     for successor in successors:
+def all_pairs_shortest_path_length(G: nx.Graph, order=None, cutoff=None):
+    length = nx.single_source_shortest_path_length
+    order = order or G.nodes
+    for n in order:
+        yield (n, length(G, n, cutoff=cutoff))
 
 
+def tree_cover_embedding_distortion(G: nx.Graph, 𝓕 : Set[nx.Graph]):
+    V = list(G.nodes)
+    asps = lambda H: all_pairs_shortest_path_length(H, V)
+    max_dist = 1
+    for (u, d_G), *d_Ts in zip(asps(G), *map(asps, 𝓕 )):
+        d_G.pop(u)
+        dist = max([min([d_T[v] for _, d_T in d_Ts]) / d_G[v] for v in d_G])
+        max_dist = dist if dist > max_dist else max_dist
+    return max_dist

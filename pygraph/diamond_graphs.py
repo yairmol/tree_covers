@@ -1,13 +1,14 @@
-import os
+from itertools import zip_longest
+import numpy as np
 from datetime import datetime
-from typing import Tuple, Any, Callable, Set, Union, Dict
+from typing import Iterable, List, Tuple, Any, Callable, Set, Union, Dict
 
 import networkx as nx
 
 from metric_spaces import (
-    calculate_2tree_embedding_distortion,
     calc_2tree_embedding_distortion_with_known_distances,
-    two_trees_embedding_distortion
+    two_trees_embedding_distortion,
+    tree_cover_embedding_distortion
 )
 
 Vertex = Any
@@ -18,7 +19,7 @@ class DiamondGraph:
     nodes_mapping: Dict[Any, int] = {1: 1, 2: 2, 3: 3, 4: 4}
     last_node = 4
 
-    def __init__(self, k, graph_data=None):
+    def __init__(self, k, graph_data=None, to_enumerate=False):
         self.k = k
         if graph_data is not None:
             self.graph = graph_data['graph']
@@ -33,7 +34,7 @@ class DiamondGraph:
             self.four = 4
             self.graph = nx.Graph([(1, 2), (2, 3), (3, 4), (4, 1)])
             for i in range(k - 1):
-                self.graph = self._create_next_diamond_graph(self.graph)
+                self.graph = self._create_next_diamond_graph(self.graph, to_enumerate=to_enumerate)
 
     @staticmethod
     def size_v_k(k):
@@ -156,6 +157,12 @@ class DiamondGraph:
 
 
 def get_source_edge(node: tuple):
+    """
+    Given a node of the diamond graph represented as a tuple
+    such that one element of the tuple is the edges from which the node was originated
+    and the second is an index (either 0 or 1)
+    return the first edge from each the node was originated
+    """
     while isinstance(node, tuple):
         if isinstance(node[0], tuple):
             node = node[0]
@@ -166,7 +173,11 @@ def get_source_edge(node: tuple):
 
 
 def diamond_graph_subgraph(g_k: nx.Graph, u):
-    v = u % 4 + 1
+    """
+    𝐺ₖ is the k'th diamond graph and u is one the four root nodes {1, 2, 3, 4}
+    return a diamond graph 𝐺ₖ₋₁ which is the subgraph between u and (u mod 4) + 1
+    """
+    v = (u % 4) + 1
     g_k_minus_1 = nx.Graph()
     g_k_minus_1.add_nodes_from([n for n in g_k.nodes if n in {u, v} or (isinstance(n, tuple) and get_source_edge(n) == (u, v))])
     g_k_minus_1.add_edges_from([(u, v) for u, v in g_k.edges if u in g_k_minus_1.nodes and v in g_k_minus_1.nodes])
@@ -183,20 +194,28 @@ def create_trees_embedding(g_k: nx.Graph, tree1):
     return tree1, tree2
 
 
-def calculate_2tree_embedding_and_distortion(g_k):
-    t1, t2 = create_trees_embedding(g_k)
-    dist = calculate_2tree_embedding_distortion(g_k, t1, t2)
-    print(dist)
-    return t1, t2, dist
-
-
 def d2_spanning_trees():
+    """
+    return the optimal spanning tree for 𝐷₂, nodes represented as tuples
+    """
     d2 = DiamondGraph(2).graph
     t1 = nx.Graph(d2)
     t1.remove_edges_from([(1, ((1, 2), 0)), (2, ((2, 3), 1)), (4, ((3, 4), 1)), (1, ((1, 4), 0)), (1, ((1, 2), 1))])
     t2 = nx.Graph(d2)
     t2.remove_edges_from([(2, ((1, 2), 0)), (3, ((2, 3), 0)), (3, ((3, 4), 1)), (4, ((3, 4), 0)), (4, ((1, 4), 0))])
     return t1, t2
+
+
+def dg2_best_spanning_trees():
+    """
+    return the optimal spanning tree for 𝐷₂, nodes represented as integers
+    """
+    d2 = DiamondGraph(2).graph
+    t1 = nx.Graph(d2)
+    t2 = nx.Graph(d2)
+    t1.remove_edges_from([(2, ((1, 2), 0)), (2, ((1, 2), 1)), (2, ((2, 3), 0)), (3, ((3, 4), 0)), (4, ((1, 4), 0))])
+    t2.remove_edges_from([(1, ((1, 2), 0)), (3, ((2, 3), 0)), (3, ((2, 3), 1)), (4, ((3, 4), 0)), (1, ((1, 4), 0))])
+    return d2, t1, t2
 
 
 def find_best_embedding(k: int, threshold: float):
@@ -256,15 +275,6 @@ def dg_two_trees_cover(k: int, ext_existing_edge: Callable[[Edge, int], Set[Edge
     return d_k, t1, t2
 
 
-def dg2_best_spanning_trees():
-    d2 = DiamondGraph(2).graph
-    t1 = nx.Graph(d2)
-    t2 = nx.Graph(d2)
-    t1.remove_edges_from([(2, ((1, 2), 0)), (2, ((1, 2), 1)), (2, ((2, 3), 0)), (3, ((3, 4), 0)), (4, ((1, 4), 0))])
-    t2.remove_edges_from([(1, ((1, 2), 0)), (3, ((2, 3), 0)), (3, ((2, 3), 1)), (4, ((3, 4), 0)), (1, ((1, 4), 0))])
-    return d2, t1, t2
-
-
 def node_depth(node: Union[tuple, int]):
     return 0 if not isinstance(node, tuple) else 1 + max(node_depth(node[0][0]), node_depth(node[0][1]))
 
@@ -284,11 +294,13 @@ class Node:
 
 
 def two_spanning_trees_by_construction(k: int, to_enumerate=True):
-    """create two spanning trees of the diamond graph D_k.
+    """
+    create two spanning trees of the diamond graph 𝐷ₖ.
     at each iteration choose which edges to add to each spanning tree,
     according to the edges that are in the previous spanning tree.
     assumption: for every edge e=(u,v) we assume u < v where < means
-    that u was generated before v (or that u and v are both in V1 and then they are both integers)"""
+    that u was generated before v (or that u and v are both in V1 and then they are both integers)
+    """
     d1 = DiamondGraph(1)
     t1, t2 = nx.Graph(d1.graph), nx.Graph(d1.graph)
     t1.remove_edge(1, 2)
@@ -328,6 +340,135 @@ def reverse_mapping(d: dict):
     return {v: k for k, v in d.items()}
 
 
+def seperator_based_tree(G: nx.Graph):
+    if len(G.nodes) == 1:
+        return G, G
+    V = list(G.nodes)
+    u = V[np.argmax([len(G[v]) for v in V])]
+    u_edges = list(G.edges(u))
+    G.remove_node(u)
+    CCs = list(nx.connected_components(G))
+    CCs_edges = [[(v, w) for v, w in u_edges if v in CC or w in CC] for CC in CCs]
+    tree_pairs = list(map(lambda CC: seperator_based_tree(nx.Graph(nx.induced_subgraph(G, CC))), CCs))
+    T1, T2 = nx.Graph(), nx.Graph()
+    for (T11, T12), edges in zip(tree_pairs, CCs_edges):
+        T1.add_edges_from(T11.edges), T2.add_edges_from(T12.edges)
+        if len(edges) == 1:
+            T1.add_edge(*edges[0]), T2.add_edge(*edges[0])
+        else:
+            print("len_edges", len(edges))
+            e1, e2 = edges[0], edges[1]
+            T1.add_edge(*e1), T2.add_edge(*e2)
+    print("is_tree", nx.is_tree(T1), nx.is_tree(T2))
+    return T1, T2
+
+
+def separator_based_two_tree_embedding(G: DiamondGraph):
+    """
+    construct a tree cover of size 2 for the diamond graph 𝐺ₖ
+
+    Warning: This works poorly (linear distortion)
+    """
+    edges1, edges3 = list(G.graph.edges(1)), list(G.graph.edges(3))
+    G.graph.remove_node(1), G.graph.remove_node(3)
+    CCs = list(nx.connected_components(G.graph))
+    CCs_edges1 = [[(v, w) for v, w in edges1 if v in CC or w in CC] for CC in CCs]
+    CCs_edges3 = [[(v, w) for v, w in edges3 if v in CC or w in CC] for CC in CCs]
+    tree_pairs = list(map(lambda CC: seperator_based_tree(nx.Graph(nx.induced_subgraph(G.graph, CC))), CCs))
+    T1, T2 = nx.Graph(), nx.Graph()
+    for i, ((T11, T12), edges1, edges3) in enumerate(zip(tree_pairs, CCs_edges1, CCs_edges3)):
+        T1.add_edges_from(T11.edges), T2.add_edges_from(T12.edges)
+        if len(edges1) == 1:
+            T1.add_edge(*edges1[0]), T2.add_edge(*edges1[0])
+            T1.add_edge(*edges3[0]), T2.add_edge(*edges3[0])
+        else:
+            print("len_edges1", len(edges1))
+            print("len_edges3", len(edges3))
+            e11, e12 = edges1[0], edges1[1]
+            e31, e32 = edges3[0], edges3[1]
+            T1.add_edge(*e11)
+            if i == 0:
+                T2.add_edge(*e12)
+            if i == 1:
+                T1.add_edge(*e31)
+            T2.add_edge(*e32)
+    return T1, T2
+
+
+def separate(G: nx.Graph, seperator: set):
+    """
+    Given a separator (a subset 𝑆 ⊆ 𝑉) return a list of the induced subgraphs
+    on the connected components received by removing 𝑆
+    """
+    G_sep = nx.induced_subgraph(G, set(G.nodes).difference(seperator))
+    CCs = list(nx.connected_components(G_sep))
+    return [nx.Graph(nx.induced_subgraph(G, CC)) for CC in CCs]
+
+
+def graph_union(Gs: Iterable[nx.Graph]):
+    """
+    Gs is a collection of graphs (which are not necessarily disjoint)
+    return a graph which is the union of all graphs
+    """
+    G = nx.Graph()
+    [G.add_nodes_from(Gi.nodes) for Gi in Gs]
+    [G.add_edges_from(Gi.edges) for Gi in Gs]
+    return G
+
+
+def get_separator_boundary_edges(G: nx.Graph, CCs: List[set]):
+    """
+    Given a graph 𝐺 and a list of connected components of G
+    find a tree that connects all connected components
+    """
+    def get_CC(u, CCs):
+        return [CC for CC in CCs if u in CC][0]
+    
+    G_sup = nx.MultiGraph()
+    CCs = [frozenset(CC) for CC in CCs]
+    for u, v in G.edges:
+        u_CC, v_CC = get_CC(u, CCs), get_CC(v, CCs)
+        G_sup.add_edge(u_CC, v_CC, u=u, v=v)
+    
+    T = nx.dfs_tree(G_sup)
+    return {(G_sup[u_CC][v_CC][0]['u'], G_sup[u_CC][v_CC][0]['v']) for u_CC, v_CC in T.edges}
+
+
+def tree_cover(G: nx.Graph, find_separator: Callable[[nx.Graph], set]):
+    """
+    build a tree cover of 𝐺 assuming 𝐺 is hierarchically separated and
+    find_separator is a function that finds a seperator for the given graph
+    and its subgraphs
+    """
+    if len(G) == 1:
+        return []
+    separator = find_separator(G)
+    subgraphs = separate(G, separator)
+    all_CCs = [set(H.nodes) for H in subgraphs] + [{u} for u in separator]
+    boundary_edges = get_separator_boundary_edges(G, all_CCs)
+    sub_tree_covers = [tree_cover(Gi, find_separator) for Gi in subgraphs]
+    bfs_trees = [nx.Graph(nx.bfs_tree(G, u)) for u in separator]
+    return [
+        graph_union(list(filter(None, Ts)) + [nx.Graph(boundary_edges)])
+        for Ts in zip_longest(*sub_tree_covers)
+    ] + bfs_trees
+
+
+def diamond_graph_tree_cover(Gₖ: DiamondGraph):
+    """
+    return an isometric (distortion 1) tree cover 𝓕 of the diamond graph DG
+    of size |𝓕| = log₄𝑛
+    """
+    Gₖ = Gₖ.graph
+    def find_separator(Gᵢ: nx.Graph):
+        if len(Gᵢ.nodes) == len(Gₖ.nodes):
+            return {1, 3}
+        V = list(Gᵢ.nodes)
+        return {V[np.argmax([Gᵢ.degree(v) for v in V])]}
+    
+    return tree_cover(Gₖ, find_separator)
+
+
 def main(size, write_graphs=False):
     print(datetime.now(), "finding spanning trees")
     d, t1, t2 = two_spanning_trees_by_construction(size)
@@ -342,9 +483,28 @@ def main(size, write_graphs=False):
     # print("missing edges in t2:", set(d.edges).difference(t2.edges))
     print("checking correctness:", nx.is_tree(t1), nx.is_tree(t2))
     print(datetime.now(), "calculating distortion")
-    print(two_trees_embedding_distortion(d, t1, t2))
+    print(tree_cover_embedding_distortion(d, {t1, t2}))
     print(datetime.now(), "finished")
 
 
+def main2():
+    k: int = 6
+    Gk = DiamondGraph(k, to_enumerate=True)
+    G = nx.Graph(Gk.graph)
+    T1, T2 = separator_based_two_tree_embedding(Gk)
+    print(nx.is_tree(T1), nx.is_tree(T2))
+    print(T1.number_of_edges(), T2.number_of_edges(), T1.number_of_nodes(), T2.number_of_nodes())
+    print(two_trees_embedding_distortion(G, T1, T2))
+
+
+def main3():
+    𝐺ₖ = DiamondGraph(6, to_enumerate=True)
+    F = diamond_graph_tree_cover(𝐺ₖ)
+    print([(T.number_of_nodes(), T.number_of_edges()) for T in F])
+    dist = tree_cover_embedding_distortion(𝐺ₖ.graph, F)
+    print(dist)
+
+
 if __name__ == "__main__":
-    main(5)
+    # main(7, write_graphs=False)
+    main3()
