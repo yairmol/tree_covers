@@ -1,7 +1,7 @@
-#include "graph_algorithms.h"
-#include "../utils/linked_list.h"
-#include "../utils/queue.h"
-#include "graph.h"
+#include "include/graph_algorithms.h"
+#include "../utils/include/linked_list.h"
+#include "../utils/include/queue.h"
+#include "include/graph.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -10,7 +10,7 @@ int* single_source_shortest_path(struct Graph* G, int s){
   char* visited = (char*)calloc(G->num_vertices, sizeof(char));
   distances[s] = 0;
   visited[s] = 1;
-  struct Queue* Q = (Queue*)calloc(1, sizeof(struct Queue));
+  struct Queue* Q = (struct Queue*)calloc(1, sizeof(struct Queue));
   enqueue(Q, s);
   while (!is_empty(Q)){
     int u = dequeue(Q);

@@ -1,6 +1,6 @@
 #include "embeddings.h"
-#include "graph/graph_vec.h"
-#include "graph/graph_algorithms2.h"
+#include "../graph/include/graph_vec.h"
+#include "../graph/include/graph_algorithms2.h"
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>

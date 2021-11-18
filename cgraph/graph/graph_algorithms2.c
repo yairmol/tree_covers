@@ -1,6 +1,6 @@
-#include "graph_algorithms2.h"
-#include "../utils/vector_queue.h"
-#include "graph_vec.h"
+#include "include/graph_algorithms2.h"
+#include "../utils/include/vector_queue.h"
+#include "include/graph_vec.h"
 #include <stdlib.h>
 #include <stdio.h>
 
