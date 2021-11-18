@@ -3,4 +3,4 @@ project(perf)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(perf main.cpp performance.cpp Timer.h hash_set.cpp)
+add_executable(perf main.cpp performance.cpp)

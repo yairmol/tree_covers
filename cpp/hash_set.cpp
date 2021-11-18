@@ -2,14 +2,21 @@
 
 
 void rehash(struct set& s){
-    struct set* snew = new set{s.max_size * 2};
-    // init(snew, s.max_size * 2);
+    int* old_table = s.table;
+    int old_size = s.max_size;
+    s.max_size = s.max_size * 2;
+    s.size = 0;
+    s.table = new int[s.max_size];
     for (int i = 0; i < s.max_size; i++){
-        if (s.table[i] != -1){
-            insert(*snew, s.table[i]);
+        s.table[i] = -1;
+    }
+    // init(snew, s.max_size * 2);
+    for (int i = 0; i < old_size; i++){
+        if (old_table[i] != -1){
+            insert(s, old_table[i]);
         }
     }
-    s = *snew;
+    delete old_table;
 }
 
 
