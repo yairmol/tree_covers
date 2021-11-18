@@ -1,7 +1,3 @@
-//
-// Created by Yair Molakandov on 18/07/2021.
-//
-
 #ifndef LEARNCPP_TIMER_H
 #define LEARNCPP_TIMER_H
 

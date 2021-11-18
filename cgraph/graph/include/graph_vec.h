@@ -2,7 +2,7 @@
 #ifndef LEARNCPP_GRAPHVEC_H
 #define LEARNCPP_GRAPHVEC_H
 
-#include "../utils/vector.h"
+#include "../../utils/include/vector.h"
 
 struct Graph {
     int num_vertices;

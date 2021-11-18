@@ -1,7 +1,3 @@
-//
-// Created by Yair Molakandov on 17/07/2021.
-//
-
 #ifndef LEARNCPP_GRAPH_H
 #define LEARNCPP_GRAPH_H
 

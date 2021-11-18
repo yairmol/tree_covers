@@ -2,10 +2,10 @@
 #include <inttypes.h>
 // #include "GraphAlgorithms.h"
 // #include "Timer.h"
-#include "performance.h"
-#include "hash_set.h"
-#include "hash_dict.h"
-#include "graph.h"
+#include "include/performance.h"
+#include "include/hash_set.h"
+#include "include/hash_dict.h"
+#include "include/graph.h"
 #include <stdlib.h>
 
 struct S{

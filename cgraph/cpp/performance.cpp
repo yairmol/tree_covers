@@ -1,11 +1,8 @@
-//
-// Created by Yair Molakandov on 13/07/2021.
-//
-#include "performance.h"
-#include "Timer.h"
+#include "include/performance.h"
+#include "include/Timer.h"
 #include <set>
-#include "hash_set.h"
-#include "hash_dict.h"
+#include "include/hash_set.h"
+#include "include/hash_dict.h"
 #include <list>
 #include <unordered_set>
 #include <unordered_map>

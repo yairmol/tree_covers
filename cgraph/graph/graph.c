@@ -1,5 +1,5 @@
-#include "graph.h"
-#include "../utils/linked_list.h"
+#include "include/graph.h"
+#include "../utils/include/linked_list.h"
 #include <stdlib.h>
 #include <stdio.h>
 

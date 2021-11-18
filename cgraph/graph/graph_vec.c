@@ -1,5 +1,5 @@
-#include "graph_vec.h"
-#include "../utils/vector.h"
+#include "include/graph_vec.h"
+#include "../utils/include/vector.h"
 #include <stdlib.h>
 #include <stdio.h>
 

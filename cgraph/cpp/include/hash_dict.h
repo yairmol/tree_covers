@@ -2,7 +2,6 @@
 #define HASHDICT_H
 
 #include <ostream>
-#include <map>
 
 template <typename K, typename V>
 struct kvpair {

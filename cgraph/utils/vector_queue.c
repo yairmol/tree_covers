@@ -1,5 +1,4 @@
-#include "vector_queue.h"
-#include "vector.h"
+#include "include/vector_queue.h"
 #include <string.h>
 
 Queue* queue(){

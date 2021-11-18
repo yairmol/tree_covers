@@ -1,9 +1,5 @@
-//
-// Created by Yair Molakandov on 01/08/2021.
-//
-
-#include "queue.h"
-#include "linked_list.h"
+#include "include/queue.h"
+#include "include/linked_list.h"
 #include <stdlib.h>
 
 void enqueue(struct Queue* Q, int e){

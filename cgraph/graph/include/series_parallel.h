@@ -2,7 +2,7 @@
 #define LEARNCPP_SERIES_PARALLEL_H
 
 #include "graph.h"
-#include "../utils/queue.h"
+#include "../../utils/include/queue.h"
 #include <stdlib.h>
 #include <stdio.h>
 
