@@ -29,3 +29,6 @@ add_executable(
 #     cuda/queue.cu
 #     cuda/graph.cu
 # )
+
+
+add_executable(main3 graph/graph_vec.c utils/vector.c main3.cpp)

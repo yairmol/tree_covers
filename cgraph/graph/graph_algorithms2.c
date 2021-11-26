@@ -10,22 +10,22 @@ int* single_source_shortest_path(struct IGraph* G, int s){
   char* visited = (char*)calloc(G->num_vertices, sizeof(char));
   distances[s] = 0;
   visited[s] = 1;
-  struct Queue* Q; init_queue(Q);
-  enqueue(Q, s);
-  while (!is_empty(Q)){
-    int u = dequeue(Q);
+  struct Queue Q; init_queue(&Q);
+  enqueue(&Q, s);
+  while (!is_empty(&Q)){
+    int u = dequeue(&Q);
     int* neighbors = G->adj_list[u].arr;
     for (int i = 0; i < G->adj_list[u].cur; i++){
       int v = neighbors[i];
       if (!visited[v]){
         visited[v] = 1;
         distances[v] = distances[u] + 1;
-        enqueue(Q, v);
+        enqueue(&Q, v);
       }
     }
   }
   free(visited);
-  free_queue(Q);
+  free_queue(&Q);
   return distances;
 }
 

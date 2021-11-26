@@ -4,7 +4,9 @@
 #include <iostream>
 #include "hash_dict.h"
 #include "hash_set.h"
-#include "../../graph/include/graph.h"
+extern "C"{
+  #include "../../graph/include/graph.h"
+}
 
 // Edge Definition
 template <typename T>
@@ -48,7 +50,9 @@ public:
       junkval(junkval),
       V{junkval},
       adj_dict{-1, nullptr},
-      edges{edge<T>{junkval, junkval}} {
+      edges{edge<T>{junkval, junkval}},
+      imapping{-1, junkval},
+      reverse_mapping{junkval, -1} {
     }
 
     void free_graph(){
@@ -119,18 +123,21 @@ public:
     }
 
     int to_igraph(struct IGraph& IG){
-      if (IG.adj_list != NULL){
-        free_igraph(&IG);
-      }
-      IG = init_graph(num_vertices());
+      // if (IG.adj_list != NULL){
+      //   free_igraph(&IG);
+      // }
+      init_graph(&IG, num_vertices());
       int i{0};
       for (T u : V){
-        this->imapping[i] = u;
-        this->reverse_mapping[u] = i;
+        insert(this->imapping, i, u);
+        insert(this->reverse_mapping, u, i);
+        std::cout << "u: " << u << ", i: " << i << ", map[i]: " << this->imapping[i] << ", rmap[u]: " << this->reverse_mapping[u] << "\n";
         i++;
       }
       for (struct edge<T> e: edges){
-        add_edge(IG, this->reverse_mapping[e.u], this->reverse_mapping[e.v]);
+        std::cout << e << "\n";
+        std::cout << this->reverse_mapping[e.u] << " " << this->reverse_mapping[e.v] << "\n";
+        ::add_edge(&IG, this->reverse_mapping[e.u], this->reverse_mapping[e.v]);
       }
       return 0;
     } 

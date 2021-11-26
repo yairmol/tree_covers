@@ -33,3 +33,15 @@ int main(int argc, char** argv){
     printf("running embedding distortion from %d to %d\n", start, stop);
     printf("%f\n", parallel_tree_embedding_distortion(&G, &T1, &T2, start, stop));
 }
+
+// int main(){
+//     struct IGraph G;
+//     path_graph(&G, 10);
+//     // print_graph(&G);
+//     int* d = single_source_shortest_path(&G, 0);
+//     for (int i = 0; i < G.num_vertices; i++)
+//     {
+//         printf("d(0, %d) = %d\n", i, d[i]);
+//     }
+    
+// }
