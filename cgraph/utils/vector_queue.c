@@ -1,25 +1,22 @@
-#include "include/vector_queue.h"
+#define VECTOR
+#include "include/queue.h"
 #include <string.h>
+#include <stdlib.h>
 
-Queue* queue(){
-    Queue* Q = (Queue*)malloc(sizeof(Queue));
-    init_queue(Q);
-    return Q;
-}
 
-void init_queue(Queue* Q){
+void init_queue(struct Queue* Q){
     Q->arr = (int*)calloc(16, sizeof(int));
     Q->size = 16;
     Q->head = 0;
     Q->tail = 0;
 }
 
-void clear(Queue* Q){
+void clear(struct Queue* Q){
     Q->head = 0;
     Q->tail = 0;
 }
 
-void resize_queue(Queue* Q){
+void resize_queue(struct Queue* Q){
     int new_size = 2 * Q->size;
     int* new_arr = (int*)calloc(new_size, sizeof(int));
     memcpy(new_arr, Q->arr, Q->size * sizeof(int));
