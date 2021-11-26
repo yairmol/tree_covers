@@ -1,10 +1,12 @@
-#ifndef LEARNCPP_GRAPH_H
-#define LEARNCPP_GRAPH_H
+#ifndef CPP_GRAPH_H
+#define CPP_GRAPH_H
 
 #include <iostream>
 #include "hash_dict.h"
 #include "hash_set.h"
-
+extern "C"{
+  #include "../../graph/include/graph.h"
+}
 
 // Edge Definition
 template <typename T>
@@ -40,13 +42,17 @@ private:
   struct set<T> V;
   struct dict<T, struct set<T>*> adj_dict;
   struct set<edge<T>> edges;
+  struct dict<int, T> imapping;
+  struct dict<T, int> reverse_mapping;
   T junkval;
 public:
     Graph(T junkval) : 
       junkval(junkval),
       V{junkval},
       adj_dict{-1, nullptr},
-      edges{edge<T>{junkval, junkval}} {
+      edges{edge<T>{junkval, junkval}},
+      imapping{-1, junkval},
+      reverse_mapping{junkval, -1} {
     }
 
     void free_graph(){
@@ -115,6 +121,26 @@ public:
     int num_edges(){
       return edges.size;
     }
+
+    int to_igraph(struct IGraph& IG){
+      // if (IG.adj_list != NULL){
+      //   free_igraph(&IG);
+      // }
+      init_graph(&IG, num_vertices());
+      int i{0};
+      for (T u : V){
+        insert(this->imapping, i, u);
+        insert(this->reverse_mapping, u, i);
+        std::cout << "u: " << u << ", i: " << i << ", map[i]: " << this->imapping[i] << ", rmap[u]: " << this->reverse_mapping[u] << "\n";
+        i++;
+      }
+      for (struct edge<T> e: edges){
+        std::cout << e << "\n";
+        std::cout << this->reverse_mapping[e.u] << " " << this->reverse_mapping[e.v] << "\n";
+        ::add_edge(&IG, this->reverse_mapping[e.u], this->reverse_mapping[e.v]);
+      }
+      return 0;
+    } 
 };
 
 template<typename T>
@@ -130,4 +156,4 @@ std::ostream& operator<<(std::ostream& os, Graph<T>& G) {
     return os;
 }
 
-#endif //LEARNCPP_GRAPH_H
+#endif //CPP_GRAPH_H

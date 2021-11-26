@@ -34,10 +34,14 @@ void vector_insert(Vector* v, int elmt){
 
 void print_vector(Vector* v){
     printf("[");
-    for (int i = 0; i < v->cur - 1; i++){
-        printf("%d, ", v->arr[i]);
+    for (int i = 0; i < v->cur; i++){
+        if (i < v->cur - 1){
+            printf("%d, ", v->arr[i]);
+        } else {
+            printf("%d", v->arr[i]);
+        }
     }
-    printf("%d]\n", v->arr[v->cur - 1]);
+    printf("]\n");
 }
 
 int vector_find(Vector* v, int elmt){

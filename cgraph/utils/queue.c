@@ -2,6 +2,7 @@
 #include "include/linked_list.h"
 #include <stdlib.h>
 
+
 void enqueue(struct Queue* Q, int e){
   struct Link* l = malloc(sizeof(struct Link));
   l->value = e;

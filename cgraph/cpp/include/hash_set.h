@@ -52,7 +52,7 @@ struct set {
             // std::cout << "here++" << std::endl;
             while (current < s.max_size) {
                 current++;
-                if (s.table[current] != junkval){
+                if (s.table[current] != s.junkval){
                     break;
                 }
             }

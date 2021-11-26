@@ -1,11 +1,19 @@
 
-#ifndef LEARNCPP_GRAPH_H
-#define LEARNCPP_GRAPH_H
+#ifndef CGRAPH_H
+#define CGRAPH_H
 
-struct Graph {
+#ifdef GRAPH_VEC
+#include "../../utils/include/vector.h"
+typedef Vector adj_list_t;
+#else
+#include "../../utils/include/linked_list.h"
+typedef struct LinkedList adj_list_t;
+#endif
+
+struct IGraph {
     int num_vertices;
     int num_edges;
-    struct LinkedList* adj_list;
+    adj_list_t* adj_list;
 };
 
 /**
@@ -13,12 +21,12 @@ struct Graph {
  * @param num_vertices number of vertices in the created graph+
  * @return a graph with num_vertices vertices
  */
-struct Graph* init_graph(int num_vertices);
+struct IGraph* init_graph(struct IGraph* G, int num_vertices);
 
 /**
  * Free the memory of an allocated graph
  */
-void free_graph(struct Graph* G);
+void free_igraph(struct IGraph* G);
 
 /**
  * Add an edge to G
@@ -27,7 +35,7 @@ void free_graph(struct Graph* G);
  * @param u one vertex in the new edge
  * @param v second vertex in the new edge
  */
-void add_edge(struct Graph* G, int u, int v);
+void add_edge(struct IGraph* G, int u, int v);
 
 /**
  * removes an edge from G
@@ -36,27 +44,31 @@ void add_edge(struct Graph* G, int u, int v);
  * @param u one vertex in the new edge
  * @param v second vertex in the new edge
  */
-int remove_edge(struct Graph* G, int u, int v);
+int remove_edge(struct IGraph* G, int u, int v);
 
 // checks if the edge {u, v} is in G
-int has_edge(struct Graph* G, int u, int v);
+int has_edge(struct IGraph* G, int u, int v);
 
 /**
  * creates a deep copy of G
  */
-struct Graph* copy_graph(struct Graph* G);
+struct IGraph* copy_graph(struct IGraph* G);
 
 /**
  * A struct for edge iteration
  * given a graph one can iterate over the edges using this struct and the next function
  */
 struct EdgeGenerator{
-    struct Graph* G;
+    struct IGraph* G;
     int current_u;
+    #ifdef GRAPH_VEC
+    int next_v;
+    #else
     struct Link* next_v;
+    #endif
 };
 
-struct EdgeGenerator* edges(struct Graph* G);
+struct EdgeGenerator* edges(struct IGraph* G);
 
 struct Edge{
     int u;
@@ -68,9 +80,10 @@ struct Edge{
  */
 struct Edge next_edge(struct EdgeGenerator* EG);
 
-struct Graph* path_graph(int n);
+struct IGraph* path_graph(struct IGraph* G, int n);
 
-struct Graph* DiamondGraph(int k);
+struct IGraph* DiamondGraph(struct IGraph* G, int k);
 
-void print_graph(struct Graph* G);
-#endif //LEARNCPP_GRAPH_H
+void print_graph(struct IGraph* G);
+
+#endif //CGRAPH_H

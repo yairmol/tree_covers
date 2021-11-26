@@ -1,13 +1,29 @@
-#ifndef LEARNCPP_QUEUE_H
-#define LEARNCPP_QUEUE_H
+#ifndef QUEUE_H
+#define QUEUE_H
+
 
 /**
  * A queue struct that supports enqueue, dequeue and empty predicate
  */
+#ifdef VECTOR
+struct Queue{
+    int* arr;
+    int size;
+    int head;
+    int tail;
+};
+#else
 struct Queue{
     struct Link* head;
     struct Link* tail;
 };
+#endif
+
+
+void init_queue(struct Queue* Q);
+
+
+void clear(struct Queue* Q);
 
 /**
  * insert the element e to the end of the queue
@@ -27,4 +43,4 @@ int is_empty(struct Queue* Q);
 
 void free_queue(struct Queue* Q);
 
-#endif //LEARNCPP_QUEUE_H
+#endif //QUEUE_H
