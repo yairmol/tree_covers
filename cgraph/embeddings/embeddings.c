@@ -1,11 +1,11 @@
 #include "embeddings.h"
-#include "graph/graph_vec.h"
-#include "graph/graph_algorithms2.h"
+#include "../graph/include/graph.h"
+#include "../graph/include/graph_algorithms.h"
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
 
-float tree_embedding_distortion(struct Graph* G, struct Graph* T_1, struct Graph* T_2) {
+float tree_embedding_distortion(struct IGraph* G, struct IGraph* T_1, struct IGraph* T_2) {
   float max_distortion = 1, distortion;
   int min_dist;
   for (int i = 0; i < G->num_vertices; i++) {
@@ -66,7 +66,7 @@ void * embedding_distortion_thread(void* arg){
   return 0;
 }
 
-float parallel_tree_embedding_distortion(struct Graph* G, struct Graph* T_1, struct Graph* T_2, int all_start, int all_stop) {
+float parallel_tree_embedding_distortion(struct IGraph* G, struct IGraph* T_1, struct IGraph* T_2, int all_start, int all_stop) {
     int num_threads = 8;
     int batch_size = (all_stop - all_start) / num_threads;
     float max_distortion = 1;

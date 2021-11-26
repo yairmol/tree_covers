@@ -1,11 +1,11 @@
 // #include "utils/linked_list.h"
 // #include "utils/vector.h"
-#include "graph.h"
-#include "graph_algorithms.h"
+#include "graph/include/graph.h"
+#include "graph/include/graph_algorithms.h"
 #include <stdio.h>
 #include <stdlib.h>
 // #include "series_parallel.h"
-#include "embeddings.h"
+#include "embeddings/embeddings.h"
 
 
 // int main(int argc, char* argv[]){
