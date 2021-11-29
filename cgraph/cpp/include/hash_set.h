@@ -183,6 +183,21 @@ void remove(struct set<T>& s, T e){
     return;
 }
 
+/**
+ * @brief returns a random elemnt from s
+ * 
+ * @tparam T 
+ * @param s 
+ * @return T 
+ */
+template <typename T>
+T get(struct set<T>& s){
+    if (s.size == 0){
+        return -1;
+    }
+    return *s.begin();
+}
+
 template <typename T>
 std::ostream& operator<<(std::ostream& os, struct set<T>& s){
     os << "{";

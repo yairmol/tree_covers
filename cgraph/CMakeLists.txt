@@ -9,12 +9,12 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 # include(CheckLanguage)
 # check_language(CUDA)
 
-add_executable(
-    graph main.c
-    graph/graph.c graph/graph_algorithms.c graph/series_parallel.c
-    utils/utils.c utils/linked_list.c utils/queue.c 
-    embeddings/embeddings.c
-)
+# add_executable(
+#     graph main.c
+#     graph/graph.c graph/graph_algorithms.c graph/series_parallel.c
+#     utils/utils.c utils/linked_list.c utils/queue.c 
+#     embeddings/embeddings.c
+# )
 
 add_executable(
     graph2 main2.c

@@ -42,18 +42,21 @@ private:
   struct set<T> V;
   struct dict<T, struct set<T>*> adj_dict;
   struct set<edge<T>> edges;
-  struct dict<int, T> imapping;
-  struct dict<T, int> reverse_mapping;
+  bool changed;
   T junkval;
 public:
-    Graph(T junkval) : 
-      junkval(junkval),
-      V{junkval},
-      adj_dict{-1, nullptr},
-      edges{edge<T>{junkval, junkval}},
-      imapping{-1, junkval},
-      reverse_mapping{junkval, -1} {
-    }
+  struct dict<int, T> imapping;
+  struct dict<T, int> reverse_mapping;
+
+  Graph(T junkval) : 
+    junkval(junkval),
+    V{junkval},
+    adj_dict{-1, nullptr},
+    edges{edge<T>{junkval, junkval}},
+    imapping{-1, junkval},
+    reverse_mapping{junkval, -1},
+    changed{true} {
+  }
 
     void free_graph(){
       V.set_free();
@@ -78,6 +81,7 @@ public:
         insert(V, u);
         struct set<T>* s = new set<T>{junkval};
         insert(adj_dict, u, s);
+        changed = true;
       }
     }
 
@@ -122,25 +126,52 @@ public:
       return edges.size;
     }
 
+    /**
+     * @brief creates a mapping from the graph vertices to
+     * {0, ... , n}, where n = num_vertices()
+     */
+    void set_mapping(){
+      if (changed){
+        int i{0};
+        for (T u : V){
+          insert(this->imapping, i, u);
+          insert(this->reverse_mapping, u, i);
+          // std::cout << "u: " << u << ", i: " << i << ", map[i]: " << this->imapping[i] << ", rmap[u]: " << this->reverse_mapping[u] << "\n";
+          i++;
+        }
+        changed = false;
+      }
+    }
+
     int to_igraph(struct IGraph& IG){
       // if (IG.adj_list != NULL){
       //   free_igraph(&IG);
       // }
       init_graph(&IG, num_vertices());
-      int i{0};
-      for (T u : V){
-        insert(this->imapping, i, u);
-        insert(this->reverse_mapping, u, i);
-        std::cout << "u: " << u << ", i: " << i << ", map[i]: " << this->imapping[i] << ", rmap[u]: " << this->reverse_mapping[u] << "\n";
-        i++;
-      }
+      set_mapping();
       for (struct edge<T> e: edges){
-        std::cout << e << "\n";
-        std::cout << this->reverse_mapping[e.u] << " " << this->reverse_mapping[e.v] << "\n";
         ::add_edge(&IG, this->reverse_mapping[e.u], this->reverse_mapping[e.v]);
       }
       return 0;
-    } 
+    }
+
+    int induced_subgraph(set<T>& S, Graph<T>& subgraph){
+      for (T u: S){
+        subgraph.add_vertex(u);
+      }
+      for (edge<T> e: edges){
+        if (mem(S, e.u) && mem(S, e.v)){
+          subgraph.add_edge(e.u, e.v);
+        }
+      }
+      return 0;
+    }
+
+    Graph<T>* operator[](set<T>& S){
+      Graph<T>* subgraph = new Graph{-1};
+      induced_subgraph(S, *subgraph);
+      return subgraph;
+    }
 };
 
 template<typename T>
