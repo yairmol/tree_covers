@@ -130,28 +130,35 @@ int intcmp(void* x, void* y){
 // 1 if the first is bigger
 // -1 if the first is smaller
 
-void* argmax(iterator_t iterator, next_t next, void* (*value_func)(void*), comp_t comp){
-  void* max_element = next(iterator);
-  void* max_value = value_func(iterator);
-  for (void* elmt = next(iterator); elmt != NULL; elmt = next(iterator)){
-    void* value = value_func(elmt);
-    if (comp(value, max_value) > 0){
-      max_value = value;
-      max_element = elmt;
-    }
-  }
-  return max_element;
-}
+// void* argmax(iterator_t iterator, next_t next, void* (*value_func)(void*), comp_t comp){
+//   void* max_element = next(iterator);
+//   void* max_value = value_func(iterator);
+//   for (void* elmt = next(iterator); elmt != NULL; elmt = next(iterator)){
+//     void* value = value_func(elmt);
+//     if (comp(value, max_value) > 0){
+//       max_value = value;
+//       max_element = elmt;
+//     }
+//   }
+//   return max_element;
+// }
 
-void* float_argmax(iterator_t iterator, next_t next, float (*value_func)(void*)){
-  void* max_element = next(iterator);
-  float max_value = value_func(iterator);
-  for (void* elmt = next(iterator); elmt != NULL; elmt = next(iterator)){
-    float value = value_func(elmt);
-    if (value > max_value){
-      max_value = value;
-      max_element = elmt;
+// void* float_argmax(iterator_t iterator, next_t next, float (*value_func)(void*)){
+//   void* max_element = next(iterator);
+//   float max_value = value_func(iterator);
+//   for (void* elmt = next(iterator); elmt != NULL; elmt = next(iterator)){
+//     float value = value_func(elmt);
+//     if (value > max_value){
+//       max_value = value;
+//       max_element = elmt;
+//     }
+//   }
+//   return max_element;
+// }
+
+template <typename T, typename U>
+void map(T* in, T* out, int size, mapper_t<T, U> f) {
+    for (int i = 0; i < size) {
+        out[i] = f(in[i]);
     }
-  }
-  return max_element;
 }
