@@ -23,6 +23,13 @@ add_executable(
     embeddings/embeddings.c
 )
 
+add_library(
+    graph
+    graph/graph_vec.c graph/graph_algorithms2.c
+    utils/vector.c utils/vector_queue.c
+    embeddings/embeddings.c
+)
+
 # add_executable(
 #     gpugraph cuda/main.cu 
 #     cuda/linked_list.cu
