@@ -156,3 +156,15 @@ def tree_cover_embedding_distortion(G: nx.Graph, 𝓕 : Set[nx.Graph]):
         dist = max([min([d_T[v] for _, d_T in d_Ts]) / d_G[v] for v in d_G])
         max_dist = dist if dist > max_dist else max_dist
     return max_dist
+
+
+def spanner_stretch(G: nx.Graph, H: nx.Graph):
+    V = list(G.nodes)
+    asps = lambda J: all_pairs_shortest_path_length(J, V)
+    max_dist = 1
+    for (u, d_G), (_, d_H) in zip(asps(G), asps(H)):
+        d_G.pop(u)
+        distortion = max([d_H[v] / d_G[v] for v in d_G] + [1])
+        max_dist = distortion if distortion > max_dist else max_dist
+    return max_dist
+    

@@ -1,7 +1,13 @@
+// mod crate::cgraph;
+
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::fmt;
+
+use crate::cgraph;
+use cgraph::IGraph;
+
 
 #[derive(Hash)]
 #[derive(PartialEq)]
@@ -19,23 +25,23 @@ impl<T: Hash + PartialOrd + Eq> Edge<T> {
     }
 }
 
-impl<'a, T: PartialOrd + Eq + Hash + fmt::Debug> fmt::Display for Edge<T> {
+impl<T: PartialOrd + Eq + Hash + fmt::Debug> fmt::Display for Edge<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({:?}, {:?})", self.u, self.v)
     }
 
 }
 
-pub struct Graph<'a, T: PartialOrd + Eq + Hash + Copy> {
+pub struct Graph<T: PartialOrd + Eq + Hash + Copy> {
     adj_dict: HashMap<T, HashSet<T>>,
     edges: HashSet<Edge<T>>,
     changed: bool,
-    imapping: HashMap<i32, &'a T>,
-    reverse_mapping: HashMap<&'a T, i32>
+    imapping: HashMap<i32, T>,
+    reverse_mapping: HashMap<T, i32>
 }
 
-impl<'a, T: PartialOrd + Eq + Hash + Copy> Graph<'a, T> {
-    pub fn new() -> Graph<'a, T>{
+impl<T: PartialOrd + Eq + Hash + Copy> Graph<T> {
+    pub fn new() -> Graph<T>{
         Graph {
             adj_dict: HashMap::new(),
             edges: HashSet::new(),
@@ -47,7 +53,7 @@ impl<'a, T: PartialOrd + Eq + Hash + Copy> Graph<'a, T> {
 
     
 
-    pub fn path_graph<'b>(n: i32) -> Graph<'b, i32> {
+    pub fn path_graph(n: i32) -> Graph<i32> {
         let mut G = Graph::<i32>::new();
         G.add_vertex(0);
         for u in 1..n {
@@ -105,36 +111,31 @@ impl<'a, T: PartialOrd + Eq + Hash + Copy> Graph<'a, T> {
         self.adj_dict[u].contains(v)
     }
 
-    // /**
-    //  * @brief creates a mapping from the graph vertices to
-    //  * {0, ... , n}, where n = num_vertices()
-    //  */
-    // void set_mapping(){
-    //   if (changed){
-    //     int i{0};
-    //     for (T u : V){
-    //       insert(this->imapping, i, u);
-    //       insert(this->reverse_mapping, u, i);
-    //       // std::cout << "u: " << u << ", i: " << i << ", map[i]: " << this->imapping[i] << ", rmap[u]: " << this->reverse_mapping[u] << "\n";
-    //       i++;
-    //     }
-    //     changed = false;
-    //   }
-    // }
+    fn set_mapping(&mut self){
+        if self.changed {
+            let mut i = 0;
+            for u in self.adj_dict.keys() {
+                self.imapping.insert(i, *u);
+                self.reverse_mapping.insert(*u, i);
+                i = i + 1;
+            }
+            self.changed = false;
+        }
+    }
 
-    // int to_igraph(struct IGraph& IG){
-    //   // if (IG.adj_list != NULL){
-    //   //   free_igraph(&IG);
-    //   // }
-    //   init_graph(&IG, num_vertices());
-    //   set_mapping();
-    //   for (struct edge<T> e: edges){
-    //     ::add_edge(&IG, this->reverse_mapping[e.u], this->reverse_mapping[e.v]);
-    //   }
-    //   return 0;
-    // }
+    pub fn to_igraph(&mut self, IG: &mut IGraph){
+        unsafe {
+            cgraph::init_graph(IG, self.adj_dict.len() as i32);
+        }
+        self.set_mapping();
+        unsafe {
+            for e in &self.edges {
+                cgraph::add_edge(IG, self.reverse_mapping[&e.u], self.reverse_mapping[&e.v]);
+            }
+        }
+    }
 
-    pub fn induced_subgraph(&self, s: &HashSet<T>) -> Graph<'a, T>{
+    pub fn induced_subgraph(&self, s: &HashSet<T>) -> Graph<T>{
         let mut gs = Graph::new();
         for u in s.iter() {
             gs.add_vertex(*u);
@@ -149,7 +150,7 @@ impl<'a, T: PartialOrd + Eq + Hash + Copy> Graph<'a, T> {
 
 }
 
-impl<'a, T: PartialOrd + Eq + Hash + Copy + fmt::Debug> fmt::Display for Graph<'a, T> {
+impl<T: PartialOrd + Eq + Hash + Copy + fmt::Debug> fmt::Display for Graph<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({:?}, {:?})", self.adj_dict.keys(), self.edges())
     }
