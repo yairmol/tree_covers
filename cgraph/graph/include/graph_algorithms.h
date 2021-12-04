@@ -12,6 +12,12 @@
 int* single_source_shortest_path(struct IGraph* G, int s);
 
 /**
+ * @brief calaculate the shortest path length between s and t in G
+ * if the distance between s and t is more then cutoff return -1
+ */
+int shortest_path_length(struct IGraph* G, int s, int t, int cutoff);
+
+/**
  * calculates distances for all u, v in V(G)
  * @param G A Graph
  * @return a distance matrix D.

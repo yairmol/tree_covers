@@ -68,7 +68,7 @@ T argmin(T* elements, int size, mapper_t<T, U> f){
  * @param f a function f:U ⟶ T
  */
 template <typename T, typename U>
-void map(T* in, T* out, int size, mapper_t<T, U> f) {
+void map(T* in, U* out, int size, mapper_t<T, U> f) {
     for (int i = 0; i < size) {
         out[i] = f(in[i]);
     }

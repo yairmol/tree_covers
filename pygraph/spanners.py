@@ -50,18 +50,18 @@ def simple_tree_cover(G: nx.Graph):
 
 
 def main():
-    G = nx.gnp_random_graph(n=2048, p=0.01)
+    G = nx.fast_gnp_random_graph(n=4096, p=0.1)
     if not nx.is_connected(G):
         print("G is not connected")
         return
     print(G)
-    T1, T2 = simple_tree_cover(G)
-    print(T1, nx.is_tree(T1), T2, nx.is_tree(T2))
-    print(tree_cover_embedding_distortion(G, {T1, T2}))
-    # k = 2 * log2(len(G.nodes)) + 1
+    # T1, T2 = simple_tree_cover(G)
+    # print(T1, nx.is_tree(T1), T2, nx.is_tree(T2))
+    # print(tree_cover_embedding_distortion(G, {T1, T2}))
+    k = 2 * log2(len(G.nodes)) + 1
     # print(k)
-    # H = low_stretch_spanner(G, k)
-    # print(H)
+    H = low_stretch_spanner(G, k)
+    print(H)
     # print(spanner_stretch(G, H))
 
 

@@ -96,3 +96,46 @@ float parallel_tree_embedding_distortion(struct IGraph* G, struct IGraph* T_1, s
     }
     return max_distortion;
 }
+
+
+float tree_cover_embedding_distortion(struct IGraph* G, struct IGraph* Ts, size_t length){
+  int** dTs = (int**)calloc(length, sizeof(int*));
+  float max_distortion = 1;
+  
+  for (size_t u = 0; u < G->num_vertices; u++) {
+    int* d_G = single_source_shortest_path(G, u);
+    
+    for (size_t t = 0; t < length; t++) {
+      dTs[t] = single_source_shortest_path(&Ts[t], u);
+    }
+
+    for (size_t v = u + 1; v < G->num_vertices; v++) {
+      int min_distance = dTs[0][v];
+      for (size_t t = 1; t < length; t++) {
+        min_distance = min_distance < dTs[t][v] ? min_distance : dTs[t][v];
+      }
+      int distortion = ((float)min_distance) / ((float)d_G[v]);
+      max_distortion = max_distortion > distortion ? max_distortion : distortion;
+    }
+    
+  }
+  return max_distortion;
+  
+}
+
+
+float embedding_distortion(int* X, size_t size, metric_t d1, metric_t d2) {
+  
+  float distortion = 1;
+
+  for (size_t x = 0; x < size; x++) {
+    
+    for (size_t y = x + 1; y < size; y++) {
+      float cur_distortion = d2(X[x], X[y]) / d1(X[x], X[y]);
+      distortion = distortion > cur_distortion ? distortion : cur_distortion;
+    }
+  }
+
+  return distortion;
+  
+}

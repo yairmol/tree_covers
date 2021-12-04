@@ -29,6 +29,43 @@ int* single_source_shortest_path(struct IGraph* G, int s){
   return distances;
 }
 
+
+int shortest_path_length(struct IGraph* G, int s, int t, int cutoff) {
+  // printf("s: %d, t: %d, cutoff: %d\n", s, t, cutoff);
+  int* distances = (int*)calloc(G->num_vertices, sizeof(int));
+  char* visited = (char*)calloc(G->num_vertices, sizeof(char));
+  distances[s] = 0;
+  visited[s] = 1;
+  struct Queue Q; init_queue(&Q);
+  enqueue(&Q, s);
+  int distance = -1;
+  while (!is_empty(&Q)){
+    int u = dequeue(&Q);
+    if (u == t){
+      distance = distances[t];
+      goto done;
+    }
+    if (distances[u] >= cutoff) {
+      goto done;
+    }
+    int* neighbors = G->adj_list[u].arr;
+    for (int i = 0; i < G->adj_list[u].cur; i++){
+      int v = neighbors[i];
+      if (!visited[v]){
+        visited[v] = 1;
+        distances[v] = distances[u] + 1;
+        enqueue(&Q, v);
+      }
+    }
+  }
+done:
+  free(visited);
+  free(distances);
+  free_queue(&Q);
+  return distance;
+}
+
+
 int** all_pairs_shortest_path(struct IGraph* G) {
   int **D = (int**)calloc(G->num_vertices, sizeof(int *));
   for (int i = 0; i < G->num_vertices; i++) {

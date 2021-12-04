@@ -1,7 +1,6 @@
 // mod crate::cgraph;
 
-use std::collections::HashSet;
-use std::collections::HashMap;
+use std::collections::{VecDeque, HashSet, HashMap};
 use std::hash::Hash;
 use std::fmt;
 
@@ -36,8 +35,8 @@ pub struct Graph<T: PartialOrd + Eq + Hash + Copy> {
     adj_dict: HashMap<T, HashSet<T>>,
     edges: HashSet<Edge<T>>,
     changed: bool,
-    imapping: HashMap<i32, T>,
-    reverse_mapping: HashMap<T, i32>
+    pub imapping: HashMap<i32, T>,
+    pub reverse_mapping: HashMap<T, i32>
 }
 
 impl<T: PartialOrd + Eq + Hash + Copy> Graph<T> {
@@ -51,16 +50,14 @@ impl<T: PartialOrd + Eq + Hash + Copy> Graph<T> {
         }
     }
 
-    
-
     pub fn path_graph(n: i32) -> Graph<i32> {
-        let mut G = Graph::<i32>::new();
-        G.add_vertex(0);
+        let mut g = Graph::<i32>::new();
+        g.add_vertex(0);
         for u in 1..n {
-            G.add_vertex(u);
-            G.add_edge(u - 1, u);
+            g.add_vertex(u);
+            g.add_edge(u - 1, u);
         }
-        G
+        g
     }
 
     pub fn adj_dict(&self) -> &HashMap<T, HashSet<T>> {
@@ -84,12 +81,12 @@ impl<T: PartialOrd + Eq + Hash + Copy> Graph<T> {
         }
         if !self.has_edge(&u, &v) {
             match self.adj_dict.get_mut(&u) {
-                Some(s) => s.insert(v),
-                None => panic!()
+                Some(s) => {s.insert(v);},
+                None => ()
             };
             match self.adj_dict.get_mut(&v) {
-                Some(s) => s.insert(u),
-                None => panic!()
+                Some(s) => {s.insert(u);},
+                None => ()
             };
             self.edges.insert(Edge::<T>::new(u, v));
         }
@@ -97,10 +94,19 @@ impl<T: PartialOrd + Eq + Hash + Copy> Graph<T> {
 
     fn remove_vertex(&mut self, u: &T){
         self.adj_dict.remove(u);
+        self.changed = true;
     }
 
     fn remove_edge(&mut self, u: &T, v: &T){
-      return;
+        match self.adj_dict.get_mut(u) {
+            Some(s) => {s.remove(v);}
+            None => (),
+        };
+        match self.adj_dict.get_mut(v) {
+            Some(s) => {s.remove(u);}
+            None => (),
+        };
+        self.edges.remove(&Edge::new(*u, *v));
     }
 
     pub fn has_vertex(&self, u: &T) -> bool{
@@ -123,14 +129,14 @@ impl<T: PartialOrd + Eq + Hash + Copy> Graph<T> {
         }
     }
 
-    pub fn to_igraph(&mut self, IG: &mut IGraph){
+    pub fn to_igraph(&mut self, ig: &mut IGraph){
         unsafe {
-            cgraph::init_graph(IG, self.adj_dict.len() as i32);
+            cgraph::init_graph(ig, self.adj_dict.len() as i32);
         }
         self.set_mapping();
         unsafe {
             for e in &self.edges {
-                cgraph::add_edge(IG, self.reverse_mapping[&e.u], self.reverse_mapping[&e.v]);
+                cgraph::add_edge(ig, self.reverse_mapping[&e.u], self.reverse_mapping[&e.v]);
             }
         }
     }
@@ -146,6 +152,30 @@ impl<T: PartialOrd + Eq + Hash + Copy> Graph<T> {
             }
         }
         gs
+    }
+
+    pub fn is_connected(&self) -> bool{
+        let mut found = HashSet::<&T>::new();
+        let mut q = VecDeque::<&T>::new();
+        let s = match self.adj_dict.keys().next() {
+            Some(s) => s,
+            None => return true
+        };
+        q.push_back(s);
+        while !q.is_empty() {
+            match q.pop_front() {
+                Some(u) => {
+                    found.insert(u);
+                    for v in &self.adj_dict[u] {
+                        if !found.contains(v) {
+                            q.push_back(v);
+                        }
+                    }
+                },
+                None => ()
+            }
+        }
+        found.len() == self.adj_dict.len()
     }
 
 }
