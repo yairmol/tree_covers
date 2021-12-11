@@ -3,6 +3,8 @@ from itertools import combinations
 from time import time
 from typing import TypeVar, Callable, Generic, Set, Dict, Any
 import networkx as nx
+import numpy as np
+
 
 T = TypeVar("T")
 T1 = TypeVar("T1")
@@ -156,6 +158,26 @@ def tree_cover_embedding_distortion(G: nx.Graph, 𝓕 : Set[nx.Graph]):
         dist = max([min([d_T[v] for _, d_T in d_Ts]) / d_G[v] for v in d_G])
         max_dist = dist if dist > max_dist else max_dist
     return max_dist
+
+
+def tree_cover_bad_pairs(G: nx.Graph, 𝓕 : Set[nx.Graph], threshold=None):
+    if threshold is None:
+        threshold = np.log2(len(G))
+    V = list(G.nodes)
+    asps = lambda H: all_pairs_shortest_path_length(H, V)
+    for (u, d_G), *d_Ts in zip(asps(G), *map(asps, 𝓕 )):
+        d_G.pop(u)
+        for v in d_G:
+            if u >= v:
+                continue
+            dts = [d_T.get(v, float('inf')) for _, d_T in d_Ts]
+            it = np.argmin(dts)
+            if it == float('inf'):
+                print("unconnected vertices", u, v)
+                continue
+            dist = dts[it] / d_G[v]
+            if dist >= threshold:
+                yield u, v
 
 
 def spanner_stretch(G: nx.Graph, H: nx.Graph):
